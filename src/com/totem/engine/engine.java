@@ -17,6 +17,9 @@ public class engine {
          6. Filter by Deputy migration cond.
          7. Calc required attributes for final result and collect them
          8. Do final result, eliminate useless attributes
+
+      Without a iterator combinator, we scan all data we need to memory and do calc.
+      Or, every step is a iterator and combinator and we can get result one by one.
      */
     private database db;
     public engine(database db) {
