@@ -24,11 +24,11 @@ public class storage {
     private ITable sys_deputy_relation;
     private ITable sys_attribute;
 
-    public boolean InitSysTables(){
+    public boolean initSysTables(){
         return false;
     }
 
-    public boolean LoadSysTables(){
+    public boolean loadSysTables(){
         return false;
     }
 
