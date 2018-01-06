@@ -1,7 +1,10 @@
 package com.totem.sql;
 
-public class parser {
-    public parser(){
+import com.totem.database;
 
+public class parser {
+    private database db;
+    public parser(database db){
+        this.db = db;
     }
 }
