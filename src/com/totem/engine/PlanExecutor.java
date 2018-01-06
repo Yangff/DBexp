@@ -8,7 +8,7 @@ public class PlanExecutor implements IVisitor {
 
     @Override
     public IVisitor runTour() {
-        return null;
+        return new PlanExecutor();
     }
 
     @Override
