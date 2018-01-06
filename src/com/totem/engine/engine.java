@@ -2,6 +2,7 @@ package com.totem.engine;
 
 import com.totem.database;
 import com.totem.storage.ITable;
+import com.totem.table.TableScheme;
 
 import java.util.Iterator;
 
@@ -36,5 +37,11 @@ public class engine {
 
     public boolean Clean(){
         return true;
+    }
+
+    public TableModel OpenSysTable(String def) {
+        TableScheme tableScheme = TableScheme.CreateScheme(def);
+        TableModel model = new TableModel(tableScheme, db.Storage.OpenSysTable(tableScheme.tableName, tableScheme));
+        return model;
     }
 }

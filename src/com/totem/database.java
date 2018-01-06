@@ -13,21 +13,25 @@ public class database {
     public index Index;
     public parser Parser;
 
-    public database(){
+    public database(String db_root){
         Engine = new engine(this);
-        Storage = new storage(this, "./");
+        Storage = new storage(this, db_root);
         Transaction = new transaction(this);
         Index = new index(this);
         Parser = new parser(this);
     }
 
-    void InitDB(){
+    public void InitDB(){
         Storage.initSysTables();
         Transaction.createJournal();
     }
 
-    void LoadDB(){
+    public void LoadDB(){
         Storage.loadSysTables();
         Transaction.restoreJournal();
+    }
+
+    public boolean Execute(String sql) {
+        return Engine.Execute(sql);
     }
 }
