@@ -14,6 +14,8 @@ public class Cell {
         return value;
     }
     public Value setValue(Value v) {
+        if (attr == null)
+            return null;
         if (v.getType() == attr.getType())
             return value = v;
         return v;

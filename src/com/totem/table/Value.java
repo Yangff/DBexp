@@ -18,42 +18,64 @@ public class Value {
     }
 
     public char[] setCharsValue(char[] str){
+        if (type == null)
+            return null;
         if (type.getMetaType() == Type.MetaType.Char)
             if (str.length <= type.getStrLen())
                 return this.strValue = str;
         return null;
     }
     public char[] getCharsValue(){
+        if (type == null) {
+            return null;
+        }
         if (type.getMetaType() == Type.MetaType.Char)
             return strValue;
         return null;
     }
     public int setIntegerValue(Integer i){
+        if (type == null) {
+            return 0;
+        }
         if (type.getMetaType() == Type.MetaType.Int)
             return intValue = i;
         return 0;
     }
     public int getIntegerValue(){
+        if (type == null)
+            return 0;
         if (type.getMetaType() == Type.MetaType.Int)
             return intValue;
         return 0;
     }
     public double setDoubleValue(double v) {
+        if (type == null)
+            return 0;
         if (type.getMetaType() == Type.MetaType.Double)
             return doubleValue = v;
         return 0;
     }
     public double getDoubleValue() {
+        if (type == null)
+            return 0;
         if (type.getMetaType() == Type.MetaType.Double)
             return doubleValue;
         return 0;
     }
 
     public Date getDateValue() {
-        return dateValue;
+        if (type == null)
+            return null;
+        if (type.getMetaType() == Type.MetaType.DateTime) {
+            return dateValue;
+        } else {
+            return null;
+        }
     }
 
     public Date setDateValue(Date d){
+        if (type == null)
+            return null;
         if (type.getMetaType() == Type.MetaType.DateTime){
             return this.dateValue = d;
         }
@@ -61,6 +83,8 @@ public class Value {
     }
 
     public Object getValue() {
+        if (type == null)
+            return null;
         switch (type.getMetaType()) {
             case Int:
                 return getIntegerValue();
@@ -75,6 +99,8 @@ public class Value {
     }
 
     public Object setValue(Object o) {
+        if (type == null)
+            return null;
         switch (type.getMetaType()) {
             case DateTime:
                 return setDateValue((Date)o);
@@ -89,6 +115,8 @@ public class Value {
     }
 
     public boolean toBoolean(){
+        if (type == null)
+            return false;
         switch (type.getMetaType()) {
             case Int:
                 return getIntegerValue() == 1;

@@ -49,11 +49,13 @@ public class Attribute {
         return rowId = rid;
     }
     public String getFullName(){
-        if (tableName.equals(""))
+        if (tableName == null || tableName.equals(""))
             return columnName;
         return tableName + "." + columnName;
     }
     public boolean isAttribute(String name) {
+        if (columnName == null)
+            return false;
         if (columnName.equals(name) || getFullName().equals(name))
             return true;
         return false;

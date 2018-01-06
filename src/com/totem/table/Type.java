@@ -2,8 +2,8 @@ package com.totem.table;
 
 public class Type {
     public enum MetaType { Null, Int, Char, Double, DateTime, PInfinity, NInfinity}
-    private MetaType metaType;
-    private Integer strMaxLen;
+    private MetaType metaType = MetaType.Null;
+    private Integer strMaxLen = 0;
     public MetaType getMetaType(){
         return metaType;
     }
@@ -28,5 +28,11 @@ public class Type {
             // that is how java's writeUTF works
         }
         return 1; // 1byte for everything
+    }
+
+    public static Type FromString(String org){
+        Type t = new Type();
+        t.setMetaType(MetaType.valueOf(org));
+        return t;
     }
 }
