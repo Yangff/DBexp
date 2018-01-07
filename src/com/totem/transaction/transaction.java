@@ -54,7 +54,7 @@ public class transaction {
             return true;
         return false;
     }
-    public ITable createLogTable(PhyTable orgTable){
+    public ITable openLogTable(PhyTable orgTable){
         if (!transaction_start)
             return orgTable;
         return null;

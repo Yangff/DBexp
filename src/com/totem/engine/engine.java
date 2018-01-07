@@ -2,8 +2,10 @@ package com.totem.engine;
 
 import com.totem.database;
 import com.totem.storage.ITable;
+import com.totem.storage.PhyTable;
 import com.totem.table.TableScheme;
 
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class engine {
@@ -29,25 +31,54 @@ public class engine {
       Or, every step is a iterator and combinator and we can get result one by one.
      */
     private database db;
+
+    private HashMap<String, ITable> tableCache;
+    private HashMap<String, TableModel> sysTableCache;
+
     public engine(database db) {
         this.db = db;
+        tableCache = new HashMap<>();
+        sysTableCache = new HashMap<>();
     }
 
-    public boolean Execute(String sql){
+    public boolean execute(String sql){
         return false;
     }
 
-    public Iterator GetResult(){
+    public Iterator getResult(){
         return null;
     }
 
-    public boolean Clean(){
+    public boolean clean(){
         return true;
     }
 
-    public TableModel OpenSysTable(String def) {
+    /*
+        FIXME: Decide to maintain system table by storage or engine [engine parts]
+        If you want to maintain system table by engine, keep these code and add a initSysTable,
+        call it when init.
+        Otherwise, openSysTable should accept a tableName, and get corresponding table from storage for create
+        table model. Maybe, table model should be moved to storage either.
+     */
+    public TableModel openSysTable(String def) {
         TableScheme tableScheme = TableScheme.CreateScheme(def);
-        TableModel model = new TableModel(tableScheme, db.Storage.OpenSysTable(tableScheme.tableName, tableScheme));
+        if (tableScheme == null)
+            return null;
+        if (sysTableCache.containsKey(tableScheme.tableName))
+            return sysTableCache.get(tableScheme.tableName);
+
+        TableModel model = new TableModel(tableScheme, db.Storage.openSysTable(tableScheme));
+        sysTableCache.put(tableScheme.tableName, model);
+
         return model;
+    }
+
+    public ITable openTable(String tableName) {
+        if (tableCache.containsKey(tableName))
+            return tableCache.get(tableName);
+        ITable orgTable = db.Storage.openTable(tableName);
+        ITable logTable = db.Transaction.openLogTable((PhyTable)orgTable);
+        tableCache.put(tableName, logTable);
+        return logTable;
     }
 }

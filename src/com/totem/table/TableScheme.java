@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Scheme of a table
+ * define the type of each column
+ */
 public class TableScheme {
     public Attribute[] attrList;
     public String tableName;
