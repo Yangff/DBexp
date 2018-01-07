@@ -57,7 +57,7 @@ public class engine {
         FIXME: Decide to maintain system table by storage or engine [engine parts]
         If you want to maintain system table by engine, keep these code and add a initSysTable,
         call it when init.
-        Otherwise, openSysTable should accept a tableName, and get corresponding table from storage for create
+        Otherwise, openSysTable should accept a tableName, and get corresponding table from storage for creating
         table model. Maybe, table model should be moved to storage either.
      */
     public TableModel openSysTable(String def) {
