@@ -4,15 +4,22 @@ import com.totem.database;
 import com.totem.table.TableScheme;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 
 public class storage {
     HashMap<String, PhyTable> tableMap;
-    private String db_root;
+    private FileSystem db_root;
     private database db;
-    public storage(database db, String db_root) {
-        this.db_root = db_root;
+    public storage(database db, String db_root) throws URISyntaxException{
+        this.db_root = FileSystems.getFileSystem(new URI(db_root));
         this.db = db;
     }
 
@@ -69,16 +76,43 @@ public class storage {
      * @throws FileNotFoundException when file is not exists and failed to create one
      */
     public RandomAccessFile getTableFile(String tbName) throws FileNotFoundException {
-        return new RandomAccessFile(db_root + "/" + tbName + ".db", "rws");
+        String path = db_root.getPath(tbName + ".db").toString();
+        return new RandomAccessFile(path, "rws");
     }
 
     /**
-     * Get File object for journal
+     * Get File object for new journal
      * @return file object
      * @throws FileNotFoundException when file is not exists and failed to create one
      */
-    public RandomAccessFile getJournalFile() throws FileNotFoundException {
-        return new RandomAccessFile(db_root + "/journal.dat", "rws");
+    public RandomAccessFile getNewJournalFile() throws FileNotFoundException {
+        Path path = db_root.getPath("journal-" + "new" + ".dat");
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ioe) {
+            return null;
+        }
+        return new RandomAccessFile(path.toString(), "rws");
+    }
+
+    /**
+     * Get File object for old journal
+     * @return file object
+     * @throws FileNotFoundException when file is not exists and failed to create one
+     */
+    public RandomAccessFile getOldJournalFile() throws FileNotFoundException {
+        Path path = db_root.getPath("journal-" + "old" + ".dat");
+        return new RandomAccessFile(path.toString(), "rws");
+    }
+
+    public boolean deleteOldJournalFile() {
+        Path path = db_root.getPath("journal-" + "old" + ".dat");
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ioe){
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -89,6 +123,7 @@ public class storage {
      * @throws FileNotFoundException when file is not exists and failed to create one
      */
     public RandomAccessFile getIndexFile(String tableName, String colunmName) throws FileNotFoundException {
-        return new RandomAccessFile(db_root + "/" + tableName + "." + colunmName + ".idx", "rws");
+        Path path = db_root.getPath(tableName + "." + colunmName + ".idx");
+        return new RandomAccessFile(path.toString(), "rws");
     }
 }
