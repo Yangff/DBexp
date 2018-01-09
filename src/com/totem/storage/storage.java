@@ -14,12 +14,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+
 public class storage {
     HashMap<String, PhyTable> tableMap;
     private FileSystem db_root;
     private database db;
-    public storage(database db, String db_root) throws URISyntaxException{
-        this.db_root = FileSystems.getFileSystem(new URI(db_root));
+    public storage(database db, String db_root) {
+        try {
+            this.db_root = FileSystems.getFileSystem(new URI(db_root));
+        } catch (URISyntaxException urie){
+            this.db_root = null;
+        }
         this.db = db;
     }
 
@@ -102,6 +108,13 @@ public class storage {
      */
     public RandomAccessFile getOldJournalFile() throws FileNotFoundException {
         Path path = db_root.getPath("journal-" + "old" + ".dat");
+        if (!Files.exists(path)) {
+            // if old log not exists, maybe its crashed after the old one deleted and new one not
+            // if so, we first try move the new log to old log and give it a shoot..
+            if (!migrateLog()){
+                return null;
+            }
+        }
         return new RandomAccessFile(path.toString(), "rws");
     }
 
@@ -110,6 +123,21 @@ public class storage {
         try {
             Files.deleteIfExists(path);
         } catch (IOException ioe){
+            return false;
+        }
+        return true;
+    }
+
+    /***
+     * When we successfully created new logFile, we can kill the old one and use it.
+     * @return
+     */
+    public boolean migrateLog(){
+        Path new_path = db_root.getPath("journal-" + "new" + ".dat");
+        Path old_path = db_root.getPath("journal-" + "old" + ".dat");
+        try {
+            Files.move(new_path, old_path, REPLACE_EXISTING);
+        } catch (Exception e){
             return false;
         }
         return true;
