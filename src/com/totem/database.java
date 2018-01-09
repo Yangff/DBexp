@@ -32,6 +32,6 @@ public class database {
     }
 
     public boolean Execute(String sql) {
-        return Engine.Execute(sql);
+        return Engine.execute(sql);
     }
 }

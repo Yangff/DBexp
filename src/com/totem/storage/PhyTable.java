@@ -140,6 +140,11 @@ public class PhyTable implements ITable {
         return 0;
     }
 
+    /**
+     * used by journal for figure out the tableName to be write to log
+     * (though, it's better to pass the tableName from the argument of create log)
+     * @return table name
+     */
     public String getTableName() {
         return tableName;
     }

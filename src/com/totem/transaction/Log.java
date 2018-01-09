@@ -1,4 +1,38 @@
 package com.totem.transaction;
 
+import java.io.RandomAccessFile;
+
+/**
+ * Read and Write logs to file
+ */
 public class Log {
+    private final RandomAccessFile logFile;
+
+    public Log(RandomAccessFile logFile){
+        this.logFile = logFile;
+    }
 }
+
+/*
+Binary layout of log files
+Each block is a 4k-page
+[Head Section, Size = 4bytes]
+0x00 [Byte] Block Type, 0 for event and 1 for details
+0x01 [Word] Block length, numbers of journals contains in this block
+0x03 [Byte] How far is the next block of this type, 0x00 for larger than 0xFF
+------ eventlog ------
+[Content Section, events log, for each log, Size=5bytes]
+0x00 [2 bits] EventType, enum {StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint}
+0x00 [30bits] related transaction id, use zero for removed event
+Read as a UINT and use 2-msb as event type
+for endCheckpoint, marks the pos of paired start checkpoint
+------ details ------
+[Content Section, details]
+0x00 [2bits] RemovedOp/WriteOp/DeleteOp
+0x00 [30bits] Length of this record, use when its too long
+0x01 [String] Effected Table
+0x?? [Int] Effected Column
+--- for write ---
+0x?? [Byte] type
+0x?? [Type] NewData
+ */

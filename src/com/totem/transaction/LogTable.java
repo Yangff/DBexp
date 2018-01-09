@@ -1,11 +1,20 @@
 package com.totem.transaction;
 
 import com.totem.storage.ITable;
+import com.totem.storage.PhyTable;
 import com.totem.table.Cell;
 
 import java.util.Iterator;
 
 public class LogTable implements ITable {
+    private PhyTable orgTable;
+    private Journal journal;
+
+    public LogTable(Journal journal, PhyTable table){
+        orgTable = table;
+        this.journal = journal;
+    }
+
     @Override
     public Iterator<Integer> begin(int start, int col) {
         return null;
