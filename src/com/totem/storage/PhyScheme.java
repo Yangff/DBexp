@@ -5,7 +5,7 @@ import com.totem.table.TableScheme;
 public class PhyScheme {
     private TableScheme scheme;
     private int[] offsets;
-    private static final int constant_offset = 1; // 1 byte flags + 4bytes row_id
+    private static final int constant_offset = 1; // 1 byte flags ( + 4bytes row_id [unused] )
     public PhyScheme(TableScheme scheme){
         this.scheme = scheme;
         this.offsets = new int[scheme.attrList.length + 1];
