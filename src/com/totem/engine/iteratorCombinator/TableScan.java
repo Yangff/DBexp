@@ -5,7 +5,6 @@ import com.totem.table.Cell;
 import java.util.Iterator;
 
 public class TableScan implements Iterator<Cell[]> {
-
     @Override
     public boolean hasNext() {
         return false;
