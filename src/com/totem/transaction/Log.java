@@ -1,6 +1,9 @@
 package com.totem.transaction;
 
+import com.totem.table.Value;
+
 import java.io.RandomAccessFile;
+import java.util.Iterator;
 
 /**
  * Read and Write logs to file
@@ -11,6 +14,47 @@ public class Log {
     public Log(RandomAccessFile logFile){
         this.logFile = logFile;
     }
+
+    public enum LogType{
+        Event, Details
+    }
+
+    public enum EventType {
+        StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint
+    }
+
+    // log manipulation
+
+    public boolean addEventLog(EventType eventType, int relatedId) {
+        return true;
+    }
+
+    public boolean addInsertLog(int tid, int rowId) {
+        return false;
+    }
+
+    public boolean addWriteLog(int tid, int rowId, int colId, Value newValue) {
+        return false;
+    }
+
+    public boolean addDeleteLog(int tid, int rowId) {
+        return false;
+    }
+
+    public boolean removeTransaction(int tid) {
+        return false;
+    }
+
+    // transaction allocator
+
+    public int allocTransaction() {
+        return -1;
+    }
+
+    public int destroyTransaction() {
+        return -1;
+    }
+
 }
 
 /*
@@ -28,8 +72,8 @@ Read as a UINT and use 2-msb as event type
 for endCheckpoint, marks the pos of paired start checkpoint
 ------ details ------
 [Content Section, details]
-0x00 [2bits] RemovedOp/WriteOp/DeleteOp
-0x00 [30bits] Length of this record, use when its too long
+0x00 [2bits] RemovedOp/InsertOp/WriteOp/DeleteOp
+0x00 [30bits] Length of this record, use when its too long (row_id for insert op)
 0x01 [String] Effected Table
 0x?? [Int] Effected Column
 --- for write ---
