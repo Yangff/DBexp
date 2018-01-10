@@ -8,7 +8,7 @@ import java.util.HashMap;
  * memory buffer all dirty data's log for fast look up
  */
 public class Journal {
-    public Log logs;
+    public Log logs; // maybe private?
 
     private HashMap<String, DirtyMap> dirtyMaps;
 
@@ -30,5 +30,15 @@ public class Journal {
 
     public boolean checkPoint(){
         return false;
+    }
+
+    public DirtyMap getDirtyMap(String tbName){
+        if (dirtyMaps.containsKey(tbName)) {
+            return dirtyMaps.get(tbName);
+        } else {
+            DirtyMap newMap = new DirtyMap();
+            dirtyMaps.put(tbName, newMap);
+            return newMap;
+        }
     }
 }
