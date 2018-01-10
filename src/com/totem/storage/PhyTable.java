@@ -148,4 +148,12 @@ public class PhyTable implements ITable {
     public String getTableName() {
         return tableName;
     }
+
+    /**
+     * synchronization of memory data and disk data
+     * @return succ?
+     */
+    public boolean sync(){
+        return true;
+    }
 }

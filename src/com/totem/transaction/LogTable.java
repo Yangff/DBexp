@@ -15,6 +15,11 @@ public class LogTable implements ITable {
         this.journal = journal;
     }
 
+    /**
+     * get original table
+     * for checkpoint, we can find physical table directly by this method
+     * @return
+     */
     public PhyTable getOrgTable() {
         return orgTable;
     }
