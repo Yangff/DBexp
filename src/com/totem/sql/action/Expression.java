@@ -25,7 +25,7 @@ public class Expression implements Action {
      *                including row_id.
      * @return a root node of the op-tree representing the query plan.
      */
-    public Op GeneratePlan(ArrayList<Attribute> indexes) {
+    public Op generatePlan(ArrayList<Attribute> indexes) {
         return new Scan();
     }
 
@@ -36,7 +36,7 @@ public class Expression implements Action {
      * @param values the values used for execute the expression
      * @return the result value of applying arguments
      */
-    public Value Apply(ArrayList<Cell> values) {
+    public Value apply(ArrayList<Cell> values) {
         return new Value();
     }
 
@@ -46,7 +46,7 @@ public class Expression implements Action {
      * @param attr the attributes may have on the deputy path
      * @return the attributes for a successfully apply.
      */
-    public ArrayList<Attribute> GetInterestAttribute(ArrayList<Attribute> attr) {
+    public ArrayList<Attribute> getInterestAttribute(ArrayList<Attribute> attr) {
         return null;
     }
 
@@ -64,7 +64,7 @@ public class Expression implements Action {
      * @param attr
      * @return
      */
-    public Type GetType(ArrayList<Attribute> attr) {
+    public Type getType(ArrayList<Attribute> attr) {
         return null;
     }
 }
