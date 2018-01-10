@@ -146,12 +146,12 @@ public class storage {
     /**
      * Get File object for table
      * @param tableName table name
-     * @param colunmName name of attribute for index
+     * @param columnName name of attribute for index
      * @return file object
      * @throws FileNotFoundException when file is not exists and failed to create one
      */
-    public RandomAccessFile getIndexFile(String tableName, String colunmName) throws FileNotFoundException {
-        Path path = db_root.getPath(tableName + "." + colunmName + ".idx");
+    public RandomAccessFile getIndexFile(String tableName, String columnName) throws FileNotFoundException {
+        Path path = db_root.getPath(tableName + "." + columnName + ".idx");
         return new RandomAccessFile(path.toString(), "rws");
     }
 }
