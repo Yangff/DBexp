@@ -50,6 +50,7 @@ public class TableScheme {
             }
             Attribute attr = new Attribute();
             attr.setTableName(tableName);
+            attr.setVirtual(false);
             if (!matcher.group("attributeName").isEmpty()) {
                 attr.setColumnName(matcher.group("attributeName"));
             }
