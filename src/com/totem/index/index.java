@@ -8,7 +8,7 @@ public class index {
     public index(database db) {
         this.db = db;
     }
-    public OrderIndex OpenIndex(Attribute column) {
+    public OrderIndex openIndex(Attribute column) {
         return null;
     }
 }
