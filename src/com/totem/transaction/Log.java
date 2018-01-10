@@ -23,7 +23,7 @@ public class Log {
         StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint
     }
 
-    // log manipulation
+
 
     public boolean addEventLog(EventType eventType, int relatedId) {
         return true;
@@ -73,7 +73,7 @@ for endCheckpoint, marks the pos of paired start checkpoint
 ------ details ------
 [Content Section, details]
 0x00 [2bits] RemovedOp/InsertOp/WriteOp/DeleteOp
-0x00 [30bits] Length of this record, use when its too long (row_id for insert op)
+0x00 [30bits] tid, use when its too long (row_id for insert op)
 0x01 [String] Effected Table
 0x?? [Int] Effected Column
 --- for write ---

@@ -11,7 +11,7 @@ public class CreateTable implements Action {
     // deputy class related
     private boolean isDeptyTable;
     private String parentTable;
-    private String switchExpression;
+    private String condExpression;
     private HashMap<String, String> virtualRelation;
 
     public String getOp() {

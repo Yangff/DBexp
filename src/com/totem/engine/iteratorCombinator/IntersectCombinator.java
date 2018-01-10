@@ -5,6 +5,8 @@ import com.totem.table.Cell;
 import java.util.Iterator;
 
 public class IntersectCombinator implements Iterator<Cell[]> {
+    public IntersectCombinator(Iterator<Cell[]> a, Iterator<Cell[]> b) { }
+
     @Override
     public boolean hasNext() {
         return false;

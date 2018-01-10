@@ -18,8 +18,6 @@ public class engine {
             O(MlogM + NlogM) ) N is size of table and M is size of results.
          5. Filter by where cond.
          6. Filter by Deputy migration cond.
-         7. Calc required attributes for final result and collect them
-         8. Do final result, eliminate useless attributes
 
          * Or you can have that pointer table for the deputy relations between objects as the design said,
          * I personally think it would be better to just create a index on gid (global object id for the original
