@@ -28,7 +28,7 @@ public class TableScheme {
      *            e.g. sys_class[name:Chars(32), isDeputyClass:Int]
      *                 sys_attribute[*class:Int, name:Chars(32), type:Int, virtual:Int]
      *                 sys_deputyRelation[*deputyClass: Int, *parentClass: Int, deputyCond: Chars(32)]
-     *                 sys_virtualAttribute[*fromAttribute: Int, *forAttribute: Int, genCond: Chars(32)]
+     *                 sys_virtualAttribute[*fromAttribute: Int, *forAttribute: Int, switch: Chars(32)]
      *                 Regex:
      *            (^\s*(?P<tableName>[a-zA-Z0-9_]+))\s*\[\s*|((?P<isIndex>\**)(?P<attributeName>[a-zA-Z0-9_]+)\s*:\s*(?P<type>Chars\((?P<size>\d+)\)|Int|DateTime|Double)\s*((,\s*(?!$))|(\]\s*(?=$))))
      *
