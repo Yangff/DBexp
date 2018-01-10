@@ -14,6 +14,14 @@ public class LogRestorer {
     }
 
     public boolean start(){
+        /*
+            scan all logs
+            pair all transactions, remove not paired transactions.
+            find start and end checkpoint
+            for last pairs of checkpoint, remove all paired transaction above start checkpoint
+            remove other checkpoint, leave last one
+            write leaved transactions into new file.
+         */
         return true;
     }
 
@@ -22,6 +30,10 @@ public class LogRestorer {
      * @return succ?
      */
     public boolean done() {
+        /*
+        write file
+        close file
+         */
         return true;
     }
 }

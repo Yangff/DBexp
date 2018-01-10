@@ -15,6 +15,10 @@ public class LogTable implements ITable {
         this.journal = journal;
     }
 
+    public PhyTable getOrgTable() {
+        return orgTable;
+    }
+
     @Override
     public Iterator<Integer> begin(int start, int col) {
         return null;
