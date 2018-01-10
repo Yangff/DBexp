@@ -43,7 +43,7 @@ public class LogTableIteratorInt implements Iterator<Integer> {
 
     @Override
     public boolean hasNext() {
-        return orgIterator.hasNext();
+        return itCurrentAvailable || dirtyAvailable;
     }
 
     @Override

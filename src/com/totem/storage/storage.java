@@ -130,7 +130,7 @@ public class storage {
 
     /***
      * When we successfully created new logFile, we can kill the old one and use it.
-     * @return
+     * @return succ?
      */
     public boolean migrateLog(){
         Path new_path = db_root.getPath("journal-" + "new" + ".dat");
