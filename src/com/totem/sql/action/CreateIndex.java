@@ -4,7 +4,7 @@ public class CreateIndex implements Action {
     private String tableName;
     private String indexName;
 
-    public String GetOp() {
+    public String getOp() {
         return "CreateIndex";
     }
 }

@@ -14,7 +14,7 @@ public class CreateTable implements Action {
     private String switchExpression;
     private HashMap<String, String> virtualRelation;
 
-    public String GetOp() {
+    public String getOp() {
         return "CreateTable";
     }
 }

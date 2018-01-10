@@ -8,7 +8,7 @@ public class Select implements Action {
 
     private Expression cond;
 
-    public String GetOp() {
+    public String getOp() {
         return "Select";
     }
 }

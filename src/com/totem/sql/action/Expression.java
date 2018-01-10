@@ -6,7 +6,7 @@ import com.totem.table.*;
 import java.util.ArrayList;
 
 public class Expression implements Action {
-    public String GetOp() {
+    public String getOp() {
         return "Expression";
     }
 

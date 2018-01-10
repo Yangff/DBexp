@@ -8,7 +8,7 @@ public class Insert implements Action {
     private String tableName;
     private HashMap<String, Value>[] values;
 
-    public String GetOp() {
+    public String getOp() {
         return "Insert";
     }
 }
