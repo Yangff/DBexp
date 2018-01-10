@@ -23,7 +23,8 @@ public class TableModel {
     private HashMap<String, OrderIndex> indexes;
 
     public TableModel(TableScheme scheme, ITable table) {
-
+        this.scheme = scheme;
+        this.table = table;
     }
 
     public HashMap<String, Value> get(int row_id) {
