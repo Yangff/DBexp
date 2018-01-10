@@ -36,19 +36,19 @@ public class transaction {
     public int startTransaction(){
         if (!transaction_start)
             return -1;
-        return 0;
+        return journal.startTransaction();
     }
 
     public boolean commitTransaction(int tid){
         if (!transaction_start)
             return true;
-        return false;
+        return journal.commitTransaction(tid);
     }
 
     public boolean rollbackTransaction(int id) {
         if (!transaction_start)
             return true;
-        return false;
+        return journal.rollbackTransaction(id);
     }
 
     public boolean restoreJournal(){
@@ -86,13 +86,13 @@ public class transaction {
     public boolean checkPoint(){
         if (!transaction_start)
             return true;
-        return false;
+        return journal.checkPoint();
     }
 
     public ITable openLogTable(PhyTable orgTable){
         if (!transaction_start)
             return orgTable;
-        return null;
+        return new LogTable(journal, orgTable);
     }
 
     private boolean initJournal() {
