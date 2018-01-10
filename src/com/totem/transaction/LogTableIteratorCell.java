@@ -5,7 +5,11 @@ import com.totem.table.Cell;
 import java.util.Iterator;
 
 public class LogTableIteratorCell implements Iterator<Cell[]> {
-    public LogTableIteratorCell() {
+    private Iterator<Cell[]> orgIterator;
+    private DirtyMap dirtyMap;
+    private boolean reversed;
+
+    public LogTableIteratorCell(Iterator<Cell[]> orgIterator, int start, boolean reversed, DirtyMap dirtyMap) {
 
     }
 

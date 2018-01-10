@@ -85,6 +85,9 @@ public class DirtyMap {
                 removedRow.remove(row);
             }
             removedRow.put(row, tid);
+            if (rows.containsKey(row)) {
+                rows.remove(row);
+            }
         } catch (Exception e){
             return false;
         }
@@ -139,5 +142,13 @@ public class DirtyMap {
      */
     public Integer getOpenTransactions(){
         return effectedRow.size();
+    }
+
+    public boolean hasRow(int id) {
+        return rows.containsKey(id) && !removedRow.containsKey(id);
+    }
+
+    public boolean hasRemoved(int id){
+        return removedRow.containsKey(id);
     }
 }
