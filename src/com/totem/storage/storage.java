@@ -52,7 +52,7 @@ public class storage {
     }
 
     /**
-     * If you want to maintain sys tables by storage
+     * Open a table
      * @param tbName table name
      * @return table
      */
@@ -61,18 +61,31 @@ public class storage {
     }
 
     /**
-     * otherwise, all table should be opened by a function like this
+     * Create a table
+     * @param tbName table name
      * @param scheme table scheme
-     * @return table
+     * @return succ?
      */
-    public ITable openSysTable(TableScheme scheme){
-        return null;
-    }
     public boolean createTable(String tbName, TableScheme scheme) {
         return false;
     }
+
+    /**
+     * Drop a table
+     * @param tbName table name
+     * @return succ?
+     */
     public boolean dropTable(String tbName) {
         return false;
+    }
+
+    /**
+     * Get scheme of table
+     * @param tbName table name
+     * @return scheme
+     */
+    public TableScheme getTableScheme(String tbName) {
+        return null;
     }
 
     /**

@@ -21,7 +21,6 @@ public class transaction {
     public transaction(database db){
         transaction_start = false;
         this.db = db;
-        tableMap = new HashMap<>();
     }
 
     /**

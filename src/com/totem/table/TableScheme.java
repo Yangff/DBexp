@@ -12,6 +12,10 @@ public class TableScheme {
     public Attribute[] attrList;
     public String tableName;
 
+    // deputy related
+    public boolean deputyTable;
+    public String selectCond;
+
     /**
      * Generate table scheme by def string
      * Especially system table scheme
@@ -38,6 +42,8 @@ public class TableScheme {
         Pattern patternScheme = Pattern.compile("(^\\s*(?<tableName>[a-zA-Z0-9_]+))\\s*\\[\\s*|((?<isIndex>\\**)(?<attributeName>[a-zA-Z0-9_]+)\\s*:\\s*(?<type>Chars\\((?<size>\\d+)\\)|Int|DateTime|Double)\\s*((,\\s*(?!$))|(\\]\\s*(?=$))))");
         final Matcher matcher = patternScheme.matcher(def);
         TableScheme tableScheme = new TableScheme();
+        tableScheme.deputyTable = false;
+        tableScheme.selectCond = "";
         String tableName = null;
         ArrayList<Attribute> attrs = new ArrayList<>();
         while (matcher.find()) {
@@ -49,10 +55,12 @@ public class TableScheme {
                 return null;
             }
             Attribute attr = new Attribute();
-            attr.setTableName(tableName);
             attr.setVirtual(false);
             if (!matcher.group("attributeName").isEmpty()) {
                 attr.setColumnName(matcher.group("attributeName"));
+            } else {
+                // column name is required
+                return null;
             }
             if (!matcher.group("isIndex").isEmpty()) {
                 attr.setIndex(true);

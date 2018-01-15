@@ -31,12 +31,9 @@ public class engine {
     private database db;
 
     private HashMap<String, ITable> tableCache;
-    private HashMap<String, TableModel> sysTableCache;
-
     public engine(database db) {
         this.db = db;
         tableCache = new HashMap<>();
-        sysTableCache = new HashMap<>();
     }
 
     public boolean execute(String sql){
@@ -51,32 +48,11 @@ public class engine {
         return true;
     }
 
-    /*
-        FIXME: Decide to maintain system table by storage or engine [engine parts]
-        If you want to maintain system table by engine, keep these code and add a initSysTable,
-        call it when init.
-        Otherwise, openSysTable should accept a tableName, and get corresponding table from storage for creating
-        table model. Maybe, table model should be moved to storage either.
-     */
-    public TableModel openSysTable(String def) {
-        TableScheme tableScheme = TableScheme.CreateScheme(def);
-        if (tableScheme == null)
-            return null;
-        if (sysTableCache.containsKey(tableScheme.tableName))
-            return sysTableCache.get(tableScheme.tableName);
-
-        TableModel model = new TableModel(tableScheme, db.Storage.openSysTable(tableScheme));
-        sysTableCache.put(tableScheme.tableName, model);
-
-        return model;
-    }
-
     public ITable openTable(String tableName) {
         if (tableCache.containsKey(tableName))
             return tableCache.get(tableName);
         ITable orgTable = db.Storage.openTable(tableName);
-        ITable logTable = db.Transaction.openLogTable(, (PhyTable)orgTable);
-        tableCache.put(tableName, logTable);
-        return logTable;
+        tableCache.put(tableName, orgTable);
+        return orgTable;
     }
 }

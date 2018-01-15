@@ -7,10 +7,30 @@ public class Attribute {
     private String tableName;
     private String columnName;
 
+    public Attribute(String columnName, String tbName){
+        tableName = tbName;
+        this.columnName = columnName;
+    }
+
+    public Attribute(String columnName){
+        this.columnName = columnName;
+        this.tableName = "";
+    }
+
+    public Attribute(){
+        this.columnName = "";
+    }
+
+    // type of this field
     private Type type;
+    // mark if this attribute is index
     private boolean index;
+    // mark if this attribute is row id? (aka physical order)
     private boolean rowId;
+
+    // switch
     private boolean virtual;
+    private String switchExpr;
 
     public String getTableName(){
         return tableName;
@@ -48,11 +68,19 @@ public class Attribute {
     public boolean setRowId(boolean rid){
         return rowId = rid;
     }
+
+    public String getSwitchExpr(){return switchExpr;}
+
+    public String setSwitchExpr(String switchExpr) {
+        return this.switchExpr = switchExpr;
+    }
+
     public String getFullName(){
         if (tableName == null || tableName.equals(""))
             return columnName;
         return tableName + "." + columnName;
     }
+
     public boolean isAttribute(String name) {
         if (columnName == null)
             return false;
@@ -60,6 +88,7 @@ public class Attribute {
             return true;
         return false;
     }
+
     public int getSize(){
         if (!virtual)
             return type.getSize();
