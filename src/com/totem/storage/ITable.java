@@ -1,6 +1,7 @@
 package com.totem.storage;
 
 import com.totem.table.Cell;
+import com.totem.table.TableScheme;
 
 import java.util.Iterator;
 
@@ -13,12 +14,9 @@ public interface ITable {
      * column for `row_id` of original (also known as object id) is {@code col}=1
      * instead of {@code col}=0
      * @param start start row_id
-     * @param col scanning col, 0 for normal table and 1 for deputy table.
-     *            (For table scheme, {@code col} counting from 1 for
-     *            first column because 0 are used fro row_id.)
      * @return
      */
-    Iterator<Integer> begin(int start, int col);
+    Iterator<Integer> begin(int start);
 
     /**
      * scan INT value reversed from table
@@ -28,12 +26,9 @@ public interface ITable {
      * column for `row_id` of original (also known as object id) is {@code col}=1
      * instead of {@code col}=0
      * @param start start row_id
-     * @param col scanning col, 0 for normal table and 1 for deputy table.
-     *            (For table scheme, {@code col} counting from 1 for
-     *            first column because 0 are is fro row_id.)
      * @return
      */
-    Iterator<Integer> rbegin(int start, int col) ;
+    Iterator<Integer> rbegin(int start) ;
     /**
      * Scan Row from Table
      * it scan from row_id = {@code start} and can stop anytime you
@@ -84,4 +79,10 @@ public interface ITable {
      * @return successful?
      */
     boolean remove(int row_id);
+
+    /**
+     * Get table info from storage level
+     * @return table scheme
+     */
+    public TableScheme getTableInfo();
 }

@@ -130,6 +130,10 @@ public class PhyTable implements ITable {
         return false;
     }
 
+    @Override
+    public TableScheme getTableInfo() {
+        return null;
+    }
 
     // functions for transaction
     public int insertById(int row_id, Cell[] cells){
@@ -156,4 +160,5 @@ public class PhyTable implements ITable {
     public boolean sync(){
         return true;
     }
+
 }

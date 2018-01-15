@@ -1,5 +1,7 @@
 package com.totem.table;
 
+import java.util.Date;
+
 public class Type {
     public enum MetaType { Null, Int, Chars, Double, DateTime, PInfinity, NInfinity}
     private MetaType metaType = MetaType.Null;
@@ -34,5 +36,22 @@ public class Type {
         Type t = new Type();
         t.setMetaType(MetaType.valueOf(org));
         return t;
+    }
+
+    public Value createEmptyValue(){
+        Value v = new Value();
+        v.setType(this);
+        switch (metaType) {
+            case Int:
+            case Double:
+                v.setValue(0);
+                break;
+            case DateTime:
+                v.setDateValue(new Date());
+                break;
+            case Chars:
+                v.setCharsValue(new char[1]); // it's 1
+        }
+        return v; // 1byte for everything
     }
 }

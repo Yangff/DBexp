@@ -95,4 +95,22 @@ public class TableScheme {
         tableScheme.attrList = attrs.toArray(new Attribute[attrs.size()]);
         return tableScheme;
     }
+
+    public Cell[] createEmptyRow(){
+        int cnt = 0;
+        for (int i = 0; i < attrList.length; i++){
+            if (!attrList[i].isVirtual())
+                cnt ++;
+        }
+        Cell[] rst = new Cell[cnt];
+        for (int i = 0, j = 0; i < attrList.length; i++){
+            if (!attrList[i].isVirtual()) {
+                rst[j] = new Cell();
+                rst[j].setAttribute(attrList[i]);
+                rst[j].setValue(attrList[i].getType().createEmptyValue());
+                j++;
+            }
+        }
+        return rst;
+    }
 }
