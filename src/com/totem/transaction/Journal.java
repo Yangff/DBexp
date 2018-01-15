@@ -1,5 +1,7 @@
 package com.totem.transaction;
 
+import com.totem.sql.plan.Intersect;
+
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
@@ -10,14 +12,17 @@ import java.util.HashMap;
 public class Journal {
     public Log logs; // maybe private?
 
-    private HashMap<String, DirtyMap> dirtyMaps;
+    HashMap<Integer, TransactionInst> trans;
 
     public Journal(RandomAccessFile logFile){
         this.logs = new Log(logFile);
     }
 
-    public int startTransaction(){
-        return 0;
+    public TransactionInst startTransaction(){
+        int tid = logs.allocTransaction();
+        TransactionInst inst = new TransactionInst(tid, this);
+        trans.put(tid, inst);
+        return inst;
     }
 
     public boolean commitTransaction(int tid){
@@ -32,13 +37,4 @@ public class Journal {
         return false;
     }
 
-    public DirtyMap getDirtyMap(String tbName){
-        if (dirtyMaps.containsKey(tbName)) {
-            return dirtyMaps.get(tbName);
-        } else {
-            DirtyMap newMap = new DirtyMap();
-            dirtyMaps.put(tbName, newMap);
-            return newMap;
-        }
-    }
 }

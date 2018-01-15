@@ -43,12 +43,9 @@ public class PhyTable implements ITable {
      * column for `row_id` of original (also known as object id) is {@code col}=1
      * instead of {@code col}=0
      * @param start start row_id
-     * @param col scanning col, 0 for normal table and 1 for deputy table.
-     *            (For table scheme, {@code col} counting from 1 for
-     *            first column because 0 are used fro row_id.)
      * @return
      */
-    public Iterator<Integer> begin(int start, int col) {
+    public Iterator<Integer> begin(int start) {
         return null;
     }
 
@@ -60,12 +57,9 @@ public class PhyTable implements ITable {
      * column for `row_id` of original (also known as object id) is {@code col}=1
      * instead of {@code col}=0
      * @param start start row_id
-     * @param col scanning col, 0 for normal table and 1 for deputy table.
-     *            (For table scheme, {@code col} counting from 1 for
-     *            first column because 0 are is fro row_id.)
      * @return
      */
-    public Iterator<Integer> rbegin(int start, int col) {
+    public Iterator<Integer> rbegin(int start) {
         return null;
     }
 
@@ -105,8 +99,7 @@ public class PhyTable implements ITable {
      * @param interest interested columns
      *                 (For table scheme, columns counting from 1 for
      *                  first column because 0 is used fro row_id.)
-     *                 use null for getting all data.
-          * @return row
+     * @return row, null if not exists
      */
     public Cell[] get(int row, int[] interest) {
         return null;

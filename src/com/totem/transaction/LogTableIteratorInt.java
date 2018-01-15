@@ -82,7 +82,7 @@ public class LogTableIteratorInt implements Iterator<Integer> {
 
     /**
      * move dirty to next available
-     * @return
+     * @return succ?
      */
     private boolean moveDirty() {
         while (!dirtyMap.hasRow(dirtyCurrent)) {
@@ -103,7 +103,7 @@ public class LogTableIteratorInt implements Iterator<Integer> {
 
     /**
      * move dirty to next
-     * @return
+     * @return succ?
      */
     private boolean nextDirty(){
         if (!dirtyAvailable)
@@ -125,7 +125,7 @@ public class LogTableIteratorInt implements Iterator<Integer> {
 
     /**
      * move iterator if it has removed according to logs
-     * @return
+     * @return succ?
      */
     private boolean moveIt(){
         while (dirtyMap.hasRemoved(itCurrent) && orgIterator.hasNext()) {
@@ -136,7 +136,7 @@ public class LogTableIteratorInt implements Iterator<Integer> {
 
     /**
      * move iterator to next
-     * @return
+     * @return succ?
      */
     private boolean nextIt(){
         if (!itCurrentAvailable)

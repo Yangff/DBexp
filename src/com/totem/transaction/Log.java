@@ -23,8 +23,6 @@ public class Log {
         StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint
     }
 
-
-
     public boolean addEventLog(EventType eventType, int relatedId) {
         return true;
     }
@@ -51,7 +49,7 @@ public class Log {
         return -1;
     }
 
-    public int destroyTransaction() {
+    public int freeTransaction() {
         return -1;
     }
 

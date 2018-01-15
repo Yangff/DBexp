@@ -44,32 +44,10 @@ public class transaction {
      * start transaction
      * @return transaction id
      */
-    public int startTransaction(){
+    public TransactionInst startTransaction(){
         if (!transaction_start)
-            return -1;
+            return null;
         return journal.startTransaction();
-    }
-
-    /**
-     * commit transaction
-     * @param tid transaction it
-     * @return succ?
-     */
-    public boolean commitTransaction(int tid){
-        if (!transaction_start)
-            return true;
-        return journal.commitTransaction(tid);
-    }
-
-    /**
-     * rollback transaction
-     * @param id transaction id
-     * @return succ?
-     */
-    public boolean rollbackTransaction(int id) {
-        if (!transaction_start)
-            return true;
-        return journal.rollbackTransaction(id);
     }
 
     /**
@@ -120,21 +98,6 @@ public class transaction {
         if (!transaction_start)
             return true;
         return journal.checkPoint();
-    }
-
-    /**
-     * create a log table for execute engine
-     *
-     * @param tid
-     * @param orgTable
-     * @return
-     */
-    public ITable openLogTable(int tid, PhyTable orgTable){
-        if (!transaction_start)
-            return orgTable;
-        if (orgTable == null)
-            return null;
-        return new LogTable(journal, tid, orgTable);
     }
 
     /**

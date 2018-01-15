@@ -61,8 +61,7 @@ public interface ITable {
      * @param interest interested columns
      *                 (For table scheme, columns counting from 1 for
      *                  first column because 0 is used fro row_id.)
-     *                 use null for getting all data.
-     * @return row
+     * @return row, null if not exists
      */
     Cell[] get(int row, int[] interest);
 

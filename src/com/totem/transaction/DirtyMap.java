@@ -3,22 +3,29 @@ package com.totem.transaction;
 import com.totem.table.Cell;
 import javafx.util.Pair;
 
-import java.util.ArrayList;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
+/**
+ * Dirty map is used for store currently modify to database on memory.
+ * In one transaction, the modify should take place instantly
+ * however, others should not see (also cannot see these modifies)
+ * because, these modifies have not written to storage level,
+ * we must handle them here.
+ */
 public class DirtyMap {
-    // rowid => row
-    public SortedMap<Integer, SortedMap<Integer, Pair<Cell, Integer>>> rows;
-    // tid
-    public SortedMap<Integer, Integer> removedRow;
-    // tid => effected row
-    public SortedMap<Integer, ArrayList<Integer>> effectedRow;
+    // row_id => column_id => cell
+    public SortedMap<Integer, SortedMap<Integer, Cell>> rows;
+
+    // row_id
+    public SortedSet<Integer> removedRow;
+
+    // effected row_id
+    public SortedSet<Integer> effectedRow;
 
     public DirtyMap(){
         rows = new TreeMap<>();
-        removedRow = new TreeMap<>();
-        effectedRow = new TreeMap<>();
+        removedRow = new TreeSet<>();
+        effectedRow = new TreeSet<>();
     }
 
     /**
@@ -26,7 +33,7 @@ public class DirtyMap {
      * @return last available row
      */
     public int lastRow(){
-        return Math.min(rows.lastKey(), removedRow.lastKey());
+        return Math.min(rows.lastKey(), removedRow.last());
     }
 
     /**
@@ -34,35 +41,32 @@ public class DirtyMap {
      * @return first available row
      */
     public int firstRow(){
-        return Math.max(rows.firstKey(), removedRow.firstKey());
+        return Math.max(rows.firstKey(), removedRow.first());
     }
 
     /**
      * put a modify into dirtymap
-     * @param tid transaction id
      * @param row effected row
      * @param cid effected column
      * @param val new value
      * @return succ?
      */
-    public boolean put(int tid, int row, int cid, Cell val) {
+    public boolean put(int row, int cid, Cell val) {
         try {
-            if (removedRow.containsKey(row)) {
+            if (removedRow.contains(row)) {
                 removedRow.remove(row);
             }
-            if (!effectedRow.containsKey(tid)) {
-                effectedRow.put(tid, new ArrayList<>());
+            if (!effectedRow.contains(row)) {
+                effectedRow.add(row);
             }
-            effectedRow.get(tid).add(row);
             if (!rows.containsKey(row)) {
                 rows.put(row, new TreeMap<>());
             }
-            SortedMap<Integer, Pair<Cell, Integer>> _row = rows.get(row);
-            Pair<Cell, Integer> newval = new Pair<>(val, tid);
+            SortedMap<Integer, Cell> _row = rows.get(row);
             if (_row.containsKey(cid)) {
                 _row.remove(cid);
             }
-            _row.put(cid, newval);
+            _row.put(cid, val);
         } catch (Exception e){
             return false;
         }
@@ -70,21 +74,41 @@ public class DirtyMap {
     }
 
     /**
+     * get interested column, no need for row_id (so don't strip it)
+     * @param row row id
+     * @param interested interested column
+     * @return values
+     */
+    public Cell[] get(int row, int[] interested) {
+        if (rows.containsKey(row)) {
+            SortedMap hadValues = rows.get(row);
+            Cell[] results = new Cell[interested.length]; // <-- warn: may contains null
+            for (int i = 0; i < interested.length; i++) {
+                if (hadValues.containsKey(interested[i])) {
+                    results[i] = (Cell)hadValues.get(interested[i]);
+                } else {
+                    results[i] = null;
+                }
+            }
+            return results;
+        }
+        return null;
+    }
+
+    /**
      * add remove one row into dirty map
-     * @param tid transaction id
      * @param row removed row id
      * @return succ?
      */
-    public boolean remove(int tid, int row){
+    public boolean remove(int row){
         try {
-            if (!effectedRow.containsKey(tid)) {
-                effectedRow.put(tid, new ArrayList<>());
+            if (!effectedRow.contains(row)) {
+                effectedRow.add(row);
             }
-            effectedRow.get(tid).add(row);
-            if (removedRow.containsKey(row)) {
+            if (removedRow.contains(row)) {
                 removedRow.remove(row);
             }
-            removedRow.put(row, tid);
+            removedRow.add(row);
             if (rows.containsKey(row)) {
                 rows.remove(row);
             }
@@ -94,61 +118,11 @@ public class DirtyMap {
         return true;
     }
 
-    /**
-     * commit a transaction and remove all related info in dirty map
-     * @param tid transaction id
-     * @return succ?
-     */
-    public boolean commit(int tid) {
-        try {
-            if (!effectedRow.containsKey(tid))
-                return false;
-            ArrayList<Integer> ary = effectedRow.get(tid);
-            effectedRow.remove(tid);
-            for (Integer i : ary) {
-                if (removedRow.containsKey(i)){
-                    if (removedRow.get(i) == tid) {
-                        removedRow.remove(i);
-                    }
-                }
-                if (rows.containsKey(i)) {
-                    SortedMap<Integer, Pair<Cell, Integer>> row;
-                    row = rows.get(i);
-                    ArrayList<Integer> removeList = new ArrayList<>();
-                    for (Integer j : row.keySet()) {
-                        if (row.get(j).getValue() == tid) {
-                            removeList.add(j);
-                        }
-                    }
-                    if (removeList.size() == row.size()) {
-                        rows.remove(i);
-                    } else {
-                        for (Integer j : removeList){
-                            row.remove(j);
-                        }
-                    }
-                }
-
-            }
-        } catch (Exception e){
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * get currently opening transactions' id
-     * @return count of transactions
-     */
-    public Integer getOpenTransactions(){
-        return effectedRow.size();
-    }
-
     public boolean hasRow(int id) {
-        return rows.containsKey(id) && !removedRow.containsKey(id);
+        return rows.containsKey(id) && !removedRow.contains(id);
     }
 
     public boolean hasRemoved(int id){
-        return removedRow.containsKey(id);
+        return removedRow.contains(id);
     }
 }
