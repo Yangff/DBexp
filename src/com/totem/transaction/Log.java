@@ -4,15 +4,19 @@ import com.totem.table.Value;
 
 import java.io.RandomAccessFile;
 import java.util.Iterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Read and Write logs to file
  */
 public class Log {
     private final RandomAccessFile logFile;
+    private SortedSet<Integer> tidPool;
 
     public Log(RandomAccessFile logFile){
         this.logFile = logFile;
+        this.tidPool = new TreeSet<>();
     }
 
     public enum LogType{
@@ -45,12 +49,37 @@ public class Log {
 
     // transaction allocator
 
-    public int allocTransaction() {
-        return -1;
+    private int tidNow = 1;
+    public int nextTid(){
+        while (tidPool.contains(tidNow)) {
+            tidNow = tidNow + 1;
+        }
+        return tidNow;
     }
 
-    public int freeTransaction() {
-        return -1;
+    private int allocCount = 0;
+    public int allocTransaction() {
+        int tid = nextTid();
+        tidPool.add(tid);
+        allocCount = allocCount + 1;
+        return tid;
+    }
+
+    private int freeCount = 0;
+    public int freeTransaction(int tid) {
+        tidPool.remove(tid);
+        freeCount = freeCount + 1;
+        // recycle of tid
+        if (freeCount / (allocCount + 1) > 0.5) {
+            freeCount = 0;
+            allocCount = 0;
+            tidNow = 1;
+        }
+        return tid;
+    }
+
+    public int transactionCount(){
+        return tidPool.size();
     }
 
 }
