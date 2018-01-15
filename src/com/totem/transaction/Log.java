@@ -27,6 +27,17 @@ public class Log {
         StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint
     }
 
+    // maybe useful ?
+    public static class LogDetail {
+        public enum DetailType {
+            Insert, Write, Delete
+        }
+        public DetailType type;
+        public int row;
+        public int col; // <- possible
+        public Value newValue; // <- possible
+    }
+
     public boolean addEventLog(EventType eventType, int relatedId) {
         return true;
     }
@@ -44,6 +55,10 @@ public class Log {
     }
 
     public boolean removeTransaction(int tid) {
+        return false;
+    }
+
+    public boolean sync() {
         return false;
     }
 

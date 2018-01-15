@@ -1,6 +1,7 @@
 package com.totem.storage;
 import com.totem.table.Cell;
 import com.totem.table.TableScheme;
+import com.totem.table.Value;
 
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
@@ -111,7 +112,19 @@ public class PhyTable implements ITable {
      * @return inserted row_id
      */
     public int insert(Cell[] cells) {
-        return insertById(getInsertRowId(), cells);
+        int row_id = getInsertRowId();
+        insertById(row_id);
+        for (int i = 0; i < cells.length; i++) {
+            writeById(row_id, cells[i].getAttribute().getColId(), cells[i].getValue());
+        }
+        return row_id;
+    }
+
+    public int update(int row_id, Cell[] cells) {
+        for (int i = 0; i < cells.length; i++) {
+            writeById(row_id, cells[i].getAttribute().getColId(), cells[i].getValue());
+        }
+        return row_id;
     }
 
     /**
@@ -129,7 +142,10 @@ public class PhyTable implements ITable {
     }
 
     // functions for transaction
-    public int insertById(int row_id, Cell[] cells){
+    public int insertById(int row_id){
+        return 0;
+    }
+    public int writeById(int row_id, int col_id, Value v) {
         return 0;
     }
 

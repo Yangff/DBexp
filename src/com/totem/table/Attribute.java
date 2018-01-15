@@ -27,6 +27,7 @@ public class Attribute {
     private boolean index;
     // mark if this attribute is row id? (aka physical order)
     private boolean rowId;
+    private int attrId;
 
     // switch
     private boolean virtual;
@@ -67,6 +68,14 @@ public class Attribute {
     }
     public boolean setRowId(boolean rid){
         return rowId = rid;
+    }
+
+    public int setColId(int cid){
+        return attrId = cid;
+    }
+
+    public int getColId(){
+        return attrId;
     }
 
     public String getSwitchExpr(){return switchExpr;}

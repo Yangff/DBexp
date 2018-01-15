@@ -106,9 +106,17 @@ public class transaction {
      */
     private boolean initJournal() {
         if (oldJournalFile != null) {
-            journal = new Journal(oldJournalFile);
+            journal = new Journal(this, oldJournalFile);
             return true;
         }
         return false;
+    }
+
+    public PhyTable openPhyTable(String tbName){
+        return (PhyTable)db.Storage.openTable(tbName);
+    }
+
+    public boolean storageSync() {
+        return db.Storage.sync();
     }
 }

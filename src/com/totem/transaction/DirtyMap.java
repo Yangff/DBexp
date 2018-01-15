@@ -18,6 +18,7 @@ public class DirtyMap {
 
     // row_id
     public SortedSet<Integer> removedRow;
+    public SortedSet<Integer> insertedRow;
 
     // effected row_id
     public SortedSet<Integer> effectedRow;
@@ -26,6 +27,7 @@ public class DirtyMap {
         rows = new TreeMap<>();
         removedRow = new TreeSet<>();
         effectedRow = new TreeSet<>();
+        insertedRow = new TreeSet<>();
     }
 
     /**
@@ -42,6 +44,16 @@ public class DirtyMap {
      */
     public int firstRow(){
         return Math.max(rows.firstKey(), removedRow.first());
+    }
+
+    /**
+     * insert mark
+     * @param row_id row_id
+     * @return row_id
+     */
+    public int insertRow(int row_id){
+        insertedRow.add(row_id);
+        return row_id;
     }
 
     /**

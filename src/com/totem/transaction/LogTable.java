@@ -10,22 +10,15 @@ import java.util.Iterator;
 public class LogTable implements ITable {
     private PhyTable orgTable;
     private DirtyMap dirtyMap;
+    private Log logs;
 
     private int tid;
 
-    public LogTable(DirtyMap dirtyMap, int tid, PhyTable table){
+    public LogTable(Log logs, DirtyMap dirtyMap, int tid, PhyTable table){
         orgTable = table;
         this.dirtyMap = dirtyMap;
         this.tid = tid;
-    }
-
-    /**
-     * get original table
-     * for checkpoint, we can find physical table directly by this method
-     * @return phy table
-     */
-    public PhyTable getOrgTable() {
-        return orgTable;
+        this.logs = logs;
     }
 
     @Override
@@ -86,20 +79,26 @@ public class LogTable implements ITable {
 
     @Override
     public int insert(Cell[] cells) {
+        int rowId = orgTable.getInsertRowId();
+        logs.addInsertLog(tid, rowId);
+        dirtyMap.insertRow(rowId);
+        for (int i = 0; i < cells.length; i++) {
+            logs.addWriteLog(tid, rowId, cells[i].getAttribute().getColId(), cells[i].getValue());
+        }
         return 0;
     }
 
     @Override
     public boolean remove(int row_id) {
+        logs.addDeleteLog(tid, row_id);
+        dirtyMap.remove(row_id);
         return false;
     }
 
     @Override
     public TableScheme getTableInfo() {
-        return null;
+        return orgTable.getTableInfo();
     }
-
-
 
     private Cell[] merge(Cell[] source, Cell[] modify) {
         Cell[] newCell = source.clone();

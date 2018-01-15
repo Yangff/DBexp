@@ -59,6 +59,7 @@ public class TableScheme {
         tableScheme.selectCond = "";
         String tableName = null;
         ArrayList<Attribute> attrs = new ArrayList<>();
+        int attrId = 1;
         while (matcher.find()) {
             if (matcher.group("tableName") != null && !matcher.group("tableName").isEmpty()) {
                 tableName = tableScheme.tableName = matcher.group("tableName");
@@ -68,6 +69,7 @@ public class TableScheme {
                 return null;
             }
             Attribute attr = new Attribute();
+            attr.setColId(attrId);
             attr.setVirtual(false);
             attr.setTableName(tableName);
             if (matcher.group("attributeName") != null && !matcher.group("attributeName").isEmpty()) {

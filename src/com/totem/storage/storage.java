@@ -166,4 +166,12 @@ public class storage {
         Path path = db_root.getPath(tableName + "." + columnName + ".idx");
         return new RandomAccessFile(path.toString(), "rws");
     }
+
+    /**
+     * sync all table file
+     * @return succ?
+     */
+    public boolean sync(){
+        return false;
+    }
 }

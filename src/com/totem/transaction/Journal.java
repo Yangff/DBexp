@@ -11,10 +11,12 @@ import java.util.HashMap;
  */
 public class Journal {
     public Log logs; // maybe private?
+    public transaction root;
 
     HashMap<Integer, TransactionInst> trans;
 
-    public Journal(RandomAccessFile logFile){
+    public Journal(transaction root, RandomAccessFile logFile){
+        this.root = root;
         this.logs = new Log(logFile);
     }
 
@@ -25,15 +27,13 @@ public class Journal {
         return inst;
     }
 
-    public boolean commitTransaction(int tid){
-        return false;
-    }
-
-    public boolean rollbackTransaction(int tid){
-        return false;
-    }
-
     public boolean checkPoint(){
+        logs.addEventLog(Log.EventType.StartCheckpoint, 1);
+        logs.sync(); // <- make sure log written
+        if (root.storageSync()){
+            logs.addEventLog(Log.EventType.EndCheckpoint, 1);
+            return logs.sync();
+        }
         return false;
     }
 
