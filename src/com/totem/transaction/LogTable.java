@@ -9,10 +9,12 @@ import java.util.Iterator;
 public class LogTable implements ITable {
     private PhyTable orgTable;
     private Journal journal;
+    private int tid;
 
-    public LogTable(Journal journal, PhyTable table){
+    public LogTable(Journal journal, int tid, PhyTable table){
         orgTable = table;
         this.journal = journal;
+        this.tid = tid;
     }
 
     /**

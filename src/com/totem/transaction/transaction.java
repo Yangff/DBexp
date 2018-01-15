@@ -12,7 +12,6 @@ public class transaction {
     private database db;
     private RandomAccessFile oldJournalFile;
     private RandomAccessFile newJournalFile;
-    private HashMap<String, ITable> tableMap;
 
 
     private boolean transaction_start;
@@ -126,22 +125,17 @@ public class transaction {
 
     /**
      * create a log table for execute engine
+     *
+     * @param tid
      * @param orgTable
      * @return
      */
-    public ITable openLogTable(PhyTable orgTable){
+    public ITable openLogTable(int tid, PhyTable orgTable){
         if (!transaction_start)
             return orgTable;
         if (orgTable == null)
             return null;
-        String tbName = orgTable.getTableName();
-        if (tableMap.containsKey(tbName)) {
-            return tableMap.get(orgTable.getTableName());
-        } else {
-            ITable newTable = new LogTable(journal, orgTable);
-            tableMap.put(tbName, newTable);
-            return newTable;
-        }
+        return new LogTable(journal, tid, orgTable);
     }
 
     /**

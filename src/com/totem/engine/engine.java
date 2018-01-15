@@ -75,7 +75,7 @@ public class engine {
         if (tableCache.containsKey(tableName))
             return tableCache.get(tableName);
         ITable orgTable = db.Storage.openTable(tableName);
-        ITable logTable = db.Transaction.openLogTable((PhyTable)orgTable);
+        ITable logTable = db.Transaction.openLogTable(, (PhyTable)orgTable);
         tableCache.put(tableName, logTable);
         return logTable;
     }
