@@ -1,7 +1,7 @@
 package com.totem.table;
 
 public class Type {
-    public enum MetaType { Null, Int, Char, Double, DateTime, PInfinity, NInfinity}
+    public enum MetaType { Null, Int, Chars, Double, DateTime, PInfinity, NInfinity}
     private MetaType metaType = MetaType.Null;
     private Integer strMaxLen = 0;
     public MetaType getMetaType(){
@@ -23,7 +23,7 @@ public class Type {
             case Double:
             case DateTime:
                 return 8; // 8bytes double/datetime
-            case Char:
+            case Chars:
                 return strMaxLen + 2; //strMaxLen (+2 bytes for length field)
             // that is how java's writeUTF works
         }

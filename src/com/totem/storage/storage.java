@@ -20,6 +20,11 @@ public class storage {
     HashMap<String, PhyTable> tableMap;
     private FileSystem db_root;
     private database db;
+
+    private ITable sys_class;
+    private ITable sys_deputy_relation;
+    private ITable sys_attribute;
+
     public storage(database db, String db_root) {
         try {
             this.db_root = FileSystems.getFileSystem(new URI(db_root));
@@ -29,24 +34,18 @@ public class storage {
         this.db = db;
     }
 
-    /*
-        FIXME: Decide to maintain system table by storage or engine [storage parts]
-
-        These are tables if you want to maintain sys tables by storage.
-
-        If use these, open system table only need table name as it arguments
-        Otherwise, add init system table in engine and REMOVE init sys table here.
-        Also, remove openSysTable and let open table accept TableScheme
-
+    /**
+     * init system table when db start
+     * @return succ?
      */
-    private ITable sys_class;
-    private ITable sys_deputy_relation;
-    private ITable sys_attribute;
-
     public boolean initSysTables(){
         return false;
     }
 
+    /**
+     * load exists system tables
+     * @return succ?
+     */
     public boolean loadSysTables(){
         return false;
     }

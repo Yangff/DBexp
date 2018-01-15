@@ -16,6 +16,19 @@ public class TableScheme {
     public boolean deputyTable;
     public String selectCond;
 
+    // system table schemes
+    public static final String sys_class_scheme;
+    public static final String sys_attribute_scheme;
+    public static final String sys_deputyRelation_scheme;
+    public static final String sys_virtualAttribute_scheme;
+
+    static {
+        sys_class_scheme = "sys_class[name:Chars(32), isDeputyClass:Int]";
+        sys_attribute_scheme = "sys_attribute[*class:Int, name:Chars(32), type:Int, virtual:Int]";
+        sys_deputyRelation_scheme = "sys_deputyRelation[*deputyClass: Int, *parentClass: Int, deputyCond: Chars(32)]";
+        sys_virtualAttribute_scheme = "sys_virtualAttribute[*attributeId: Int, switch: Chars(32)]";
+    }
+
     /**
      * Generate table scheme by def string
      * Especially system table scheme
@@ -47,7 +60,7 @@ public class TableScheme {
         String tableName = null;
         ArrayList<Attribute> attrs = new ArrayList<>();
         while (matcher.find()) {
-            if (!matcher.group("tableName").isEmpty()) {
+            if (matcher.group("tableName") != null && !matcher.group("tableName").isEmpty()) {
                 tableName = tableScheme.tableName = matcher.group("tableName");
                 continue;
             }
@@ -56,27 +69,30 @@ public class TableScheme {
             }
             Attribute attr = new Attribute();
             attr.setVirtual(false);
-            if (!matcher.group("attributeName").isEmpty()) {
+            attr.setTableName(tableName);
+            if (matcher.group("attributeName") != null && !matcher.group("attributeName").isEmpty()) {
                 attr.setColumnName(matcher.group("attributeName"));
             } else {
-                // column name is required
-                return null;
+                return null; // all attributes must have name
             }
-            if (!matcher.group("isIndex").isEmpty()) {
+            if (matcher.group("type") != null && !matcher.group("isIndex").isEmpty()) {
                 attr.setIndex(true);
             } else {
                 attr.setIndex(false);
             }
-            if (!matcher.group("type").isEmpty()) {
-                Type t = Type.FromString(matcher.group("type"));
-                if (!matcher.group("size").isEmpty()) {
+            if (matcher.group("type") != null && !matcher.group("type").isEmpty()) {
+                Type t;
+                if (matcher.group("size") != null && !matcher.group("size").isEmpty()) {
+                    t = Type.FromString(matcher.group("type").split("\\(")[0]);
                     t.setStrLen(Integer.valueOf(matcher.group("size")));
+                } else {
+                    t = Type.FromString(matcher.group("type"));
                 }
                 attr.setType(t);
             }
             attrs.add(attr);
         }
-        tableScheme.attrList = (Attribute[])attrs.toArray();
+        tableScheme.attrList = attrs.toArray(new Attribute[attrs.size()]);
         return tableScheme;
     }
 }

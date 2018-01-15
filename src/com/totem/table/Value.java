@@ -20,7 +20,7 @@ public class Value {
     public char[] setCharsValue(char[] str){
         if (type == null)
             return null;
-        if (type.getMetaType() == Type.MetaType.Char)
+        if (type.getMetaType() == Type.MetaType.Chars)
             if (str.length <= type.getStrLen())
                 return this.strValue = str;
         return null;
@@ -29,7 +29,7 @@ public class Value {
         if (type == null) {
             return null;
         }
-        if (type.getMetaType() == Type.MetaType.Char)
+        if (type.getMetaType() == Type.MetaType.Chars)
             return strValue;
         return null;
     }
@@ -88,7 +88,7 @@ public class Value {
         switch (type.getMetaType()) {
             case Int:
                 return getIntegerValue();
-            case Char:
+            case Chars:
                 return getCharsValue();
             case Double:
                 return getDoubleValue();
@@ -106,7 +106,7 @@ public class Value {
                 return setDateValue((Date)o);
             case Double:
                 return setDoubleValue((double)o);
-            case Char:
+            case Chars:
                 return setCharsValue((char[])o);
             case Int:
                 return setIntegerValue((int) o);
@@ -120,7 +120,7 @@ public class Value {
         switch (type.getMetaType()) {
             case Int:
                 return getIntegerValue() == 1;
-            case Char:
+            case Chars:
                 return getCharsValue() != null;
             case Double:
                 return true;
