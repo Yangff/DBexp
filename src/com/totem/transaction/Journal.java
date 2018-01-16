@@ -15,9 +15,9 @@ public class Journal {
 
     HashMap<Integer, TransactionInst> trans;
 
-    public Journal(transaction root, RandomAccessFile logFile){
+    public Journal(transaction root, RandomAccessFile logFile, boolean createJournal){
         this.root = root;
-        this.logs = new Log(logFile);
+        this.logs = new Log(logFile, createJournal);
     }
 
     public TransactionInst startTransaction(){

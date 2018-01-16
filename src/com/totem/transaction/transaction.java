@@ -68,7 +68,7 @@ public class transaction {
                 oldJournalFile = newJournalFile = null;
                 if (!openFS("old"))
                     return false;
-                if (initJournal()) {
+                if (initJournal(false)) {
                     transaction_start = true;
                 }
             }
@@ -84,7 +84,7 @@ public class transaction {
         db.Storage.deleteOldJournalFile();
         if (!openFS("old"))
             return false;
-        if (initJournal()) {
+        if (initJournal(true)) {
             transaction_start = true;
         }
         return transaction_start; // if succ
@@ -104,9 +104,9 @@ public class transaction {
      * init journal object from file object
      * @return succ?
      */
-    private boolean initJournal() {
+    private boolean initJournal(boolean create) {
         if (oldJournalFile != null) {
-            journal = new Journal(this, oldJournalFile);
+            journal = new Journal(this, oldJournalFile, create);
             return true;
         }
         return false;

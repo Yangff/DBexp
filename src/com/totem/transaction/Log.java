@@ -1,5 +1,6 @@
 package com.totem.transaction;
 
+import com.totem.storage.Page;
 import com.totem.table.Value;
 
 import java.io.RandomAccessFile;
@@ -14,9 +15,98 @@ public class Log {
     private final RandomAccessFile logFile;
     private SortedSet<Integer> tidPool;
 
-    public Log(RandomAccessFile logFile){
+    private Page eventPage;
+    private Page detailPage;
+    private int activePageId;
+
+    public Log(RandomAccessFile logFile, boolean createScheme){
         this.logFile = logFile;
         this.tidPool = new TreeSet<>();
+        this.eventPage = new Page(logFile, 0);
+        this.detailPage = new Page(logFile, 1);
+        if (createScheme) {
+            eventPage.buffer[0] = 1;
+            detailPage.buffer[0] = 2;
+            eventPage.buffer[1] = 0;
+            detailPage.buffer[1] = 0;
+            eventPage.buffer[2] = (byte)0xFF;
+            detailPage.buffer[2] = (byte)0xFF;
+            activePageId = 2;
+        } else {
+            activePageId = 1 + Math.max(scanPageId(eventPage, 1), scanPageId(detailPage, 2));
+        }
+    }
+
+    /**
+     * find next legal page for given type
+     * @param orgPage original page holder
+     * @param newPage page holder
+     * @param id block type
+     * @return nextPage id
+     */
+    private int nextBlock(Page orgPage, Page newPage, int id) {
+        // find next
+        // calc new page id by reading org page data
+        int p = (int)orgPage.page;
+        if (orgPage.buffer[2] == (byte)0xFF)
+            p = p + 0xFF;
+        else {
+            if (orgPage.buffer[0] == id) // <-- id correct
+                p = p + orgPage.buffer[2];
+            else p = p + 1;
+        }
+        newPage.replace(p); // <-- move new page
+        while (newPage.buffer[0] != id) { // <-- type incorrect, scan
+            if (newPage.buffer[0] == 0) // <-- illegal page
+                return p;
+            p = p + 1;
+            newPage.replace(p); // <-- move next
+        }
+        return p;
+    }
+
+    /**
+     * get last page of given page and type
+     * @param orgPage original page
+     * @param id id
+     * @return last id
+     */
+    private int scanPageId(Page orgPage, int id) {
+        int nextPageId = (int)orgPage.page;
+        Page newPage = new Page(logFile, orgPage.page);
+        while (orgPage.buffer[2] != 0) { // <-- have more page
+            nextPageId = nextBlock(orgPage, newPage, id); // <-- get next block_id == id
+            if (newPage.buffer[0] == 0)
+                return nextPageId - 1;
+            orgPage = newPage;
+        }
+        return nextPageId;
+    }
+
+    private boolean createPage(Page orgPage, int newId) {
+        try {
+            if (activePageId - orgPage.page > 0xFE) {
+                orgPage.buffer[2] = (byte) 0xFF;
+            } else {
+                orgPage.buffer[2] = (byte) (activePageId - orgPage.page);
+            }
+            orgPage.replace(activePageId);
+            activePageId = activePageId + 1;
+            orgPage.buffer[0] = (byte) newId;
+            orgPage.buffer[1] = 0;
+            orgPage.buffer[2] = 0; // <-- no more page
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean createEventBlock() {
+        return createPage(eventPage, 1);
+    }
+
+    private boolean createDetailBlock() {
+        return createPage(detailPage,2);
     }
 
     public enum LogType{
@@ -72,24 +162,14 @@ public class Log {
         return tidNow;
     }
 
-    private int allocCount = 0;
     public int allocTransaction() {
         int tid = nextTid();
         tidPool.add(tid);
-        allocCount = allocCount + 1;
         return tid;
     }
 
-    private int freeCount = 0;
     public int freeTransaction(int tid) {
         tidPool.remove(tid);
-        freeCount = freeCount + 1;
-        // recycle of tid
-        if (freeCount / (allocCount + 1) > 0.5) {
-            freeCount = 0;
-            allocCount = 0;
-            tidNow = 1;
-        }
         return tid;
     }
 
@@ -103,9 +183,9 @@ public class Log {
 Binary layout of log files
 Each block is a 4k-page
 [Head Section, Size = 4bytes]
-0x00 [Byte] Block Type, 0 for event and 1 for details
+0x00 [Byte] Block Type, 0 for nothing, 1 for event and 2 for details
 0x01 [Word] Block length, numbers of journals contains in this block
-0x03 [Byte] How far is the next block of this type, 0x00 for larger than 0xFF
+0x03 [Byte] How far is the next block of this type, 0x00 for larger than not exists, 0xFF for larger than 0xFE
 ------ eventlog ------
 [Content Section, events log, for each log, Size=5bytes]
 0x00 [2 bits] EventType, enum {StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint}
