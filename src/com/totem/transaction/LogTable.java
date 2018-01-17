@@ -83,7 +83,7 @@ public class LogTable implements ITable {
         logs.addInsertLog(tid, rowId);
         dirtyMap.insertRow(rowId);
         for (int i = 0; i < cells.length; i++) {
-            logs.addWriteLog(tid, rowId, cells[i].getAttribute().getColId(), cells[i].getValue());
+            logs.addWriteLog(tid, rowId, cells[i]);
         }
         return 0;
     }

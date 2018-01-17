@@ -133,4 +133,31 @@ public class Value {
     public String toString(){
         return getValue().toString();
     }
+
+    public byte[] getSerial() {
+        byte[] result;
+        int len = type.getSize();
+        result = new byte[len];
+        switch (type.getMetaType()) {
+            case Int:
+                result[0] = (byte)(((long)getIntegerValue()) & 0xff);
+                result[1] = (byte)(((long)getIntegerValue()>>8) & 0xff);
+                result[2] = (byte)(((long)getIntegerValue()>>16) & 0xff);
+                result[3] = (byte)(((long)getIntegerValue()>>24) & 0xff);
+                return result;
+            case Chars:
+                char[] bts = getCharsValue();
+                result[0] = (byte)(bts.length & 0xff);
+                result[1] = (byte)((bts.length>>8) & 0xff);
+                for (int i = 0; i < bts.length; i++){
+                    result[i + 2] = (byte)bts[i];
+                }
+                return result;
+            case Double:
+                return result;
+            case DateTime:
+                return result;
+        }
+        return null;
+    }
 }
