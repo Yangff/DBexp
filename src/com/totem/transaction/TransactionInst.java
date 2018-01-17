@@ -15,12 +15,21 @@ public class TransactionInst {
 
     HashMap<String, DirtyMap> dirtyMaps;
 
+    /**
+     * transaction instance
+     * @param tid transaction id
+     * @param journal journal root
+     */
     public TransactionInst(int tid, Journal journal){
         this.tid = tid;
         this.journal = journal;
         journal.logs.addEventLog(Log.EventType.StartTransaction, tid);
     }
 
+    /**
+     * get current transaction id
+     * @return tid
+     */
     public int getTid() {
         return tid;
     }
@@ -64,6 +73,11 @@ public class TransactionInst {
         return true;
     }
 
+    /**
+     * get dirtymap of this transaction
+     * @param tbName table name
+     * @return DirtyMap
+     */
     public DirtyMap getDirtyMap(String tbName){
         if (dirtyMaps.containsKey(tbName)) {
             return dirtyMaps.get(tbName);
@@ -73,6 +87,7 @@ public class TransactionInst {
             return newMap;
         }
     }
+
     /**
      * create a log table for execute engine
      * @param orgTable original table object

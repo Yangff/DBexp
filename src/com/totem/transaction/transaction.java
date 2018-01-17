@@ -18,6 +18,10 @@ public class transaction {
 
     private Journal journal;
 
+    /**
+     * create transaction instance
+     * @param db database object
+     */
     public transaction(database db){
         transaction_start = false;
         this.db = db;
@@ -112,10 +116,19 @@ public class transaction {
         return false;
     }
 
+    /**
+     * open physical table (for redo)
+     * @param tbName table name
+     * @return table
+     */
     public PhyTable openPhyTable(String tbName){
         return (PhyTable)db.Storage.openTable(tbName);
     }
 
+    /**
+     * sync with storage
+     * @return succ?
+     */
     public boolean storageSync() {
         return db.Storage.sync();
     }

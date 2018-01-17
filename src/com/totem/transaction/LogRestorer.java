@@ -15,15 +15,26 @@ import java.util.TreeSet;
 public class LogRestorer {
     private RandomAccessFile oldLog, newLog;
     private Log oldLogO, newLogO;
-    private storage store;
-    public LogRestorer(storage store, RandomAccessFile oldLog, RandomAccessFile newLog) {
+    private transaction trans;
+
+    /**
+     * Log restore task
+     * @param trans transaction interface
+     * @param oldLog old log to read
+     * @param newLog new log to write
+     */
+    public LogRestorer(transaction trans, RandomAccessFile oldLog, RandomAccessFile newLog) {
         this.oldLog = oldLog;
         this.newLog = newLog;
-        this.store = store;
+        this.trans = trans;
         this.oldLogO = new Log(oldLog, false);
         this.newLogO = new Log(newLog, true);
     }
 
+    /**
+     * do log restore
+     * @return succ?
+     */
     public boolean start(){
         /*
             scan all logs
@@ -37,7 +48,7 @@ public class LogRestorer {
         TreeSet<Integer> redoTransactions = new TreeSet<>();
         HashSet<Integer> okeyTransactions = new HashSet<>();
         // step1. scan all open transactions
-        oldLogO.eachTids((Log.LogEvent le) -> {
+        oldLogO.eachTransactions((Log.LogEvent le) -> {
             if (le.type == Log.EventType.StartTransaction) {
                 openTransactions.add(le.tid);
             }
@@ -88,7 +99,7 @@ public class LogRestorer {
             newLogO.sync(); // <-- sync log file
             // redo
             newLogO.eachDetails((Log.LogDetail ld) -> {
-                PhyTable tb = (PhyTable)store.openTable(ld.tbName);
+                PhyTable tb = (PhyTable)trans.openPhyTable(ld.tbName);
                 if (ld.type == Log.LogDetail.DetailType.Write) {
                     tb.writeById(ld.row, ld.col, ld.newValue);
                 }
@@ -99,6 +110,7 @@ public class LogRestorer {
                     tb.remove(ld.row);
                 }
             });
+            trans.storageSync();
             oldLog.close();
             newLog.close();
         } catch (IOException ioe){

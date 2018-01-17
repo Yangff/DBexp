@@ -22,6 +22,11 @@ public class Log {
     private int dCnt;
     private int activePageId;
 
+    /**
+     * New Log Object
+     * @param logFile log file
+     * @param createScheme should I create a log scheme?
+     */
     public Log(RandomAccessFile logFile, boolean createScheme){
         this.logFile = logFile;
         this.tidPool = new TreeSet<>();
@@ -53,7 +58,11 @@ public class Log {
         }
     }
 
-    public void eachTids(Consumer<LogEvent> call){
+    /**
+     * each all transactions
+     * @param call callback function for every transaction info
+     */
+    public void eachTransactions(Consumer<LogEvent> call){
         long orgPage = eventPage.page;
         eventPage.replace(0);
         while (true){
@@ -92,6 +101,10 @@ public class Log {
         eventPage.replace(orgPage);
     }
 
+    /**
+     * each all detail logs
+     * @param call callback function for details
+     */
     public void eachDetails(Consumer<LogDetail> call){
         long orgPage = detailPage.page;
         detailPage.replace(1);
@@ -189,8 +202,11 @@ public class Log {
         detailPage.replace(orgPage);
     }
 
+    /**
+     * recovery used tids
+     */
     private void recoveryTids() {
-        eachTids((LogEvent le) -> {
+        eachTransactions((LogEvent le) -> {
             if (le.type == EventType.StartTransaction) {
                 tidPool.add(le.tid);
             }
@@ -243,6 +259,12 @@ public class Log {
         return nextPageId;
     }
 
+    /**
+     * get next page id
+     * @param orgPage original page
+     * @param id page type
+     * @return next page id
+     */
     private int getNextPage(Page orgPage, int id){
         Page newPage = new Page(logFile, orgPage.page);
         if (orgPage.buffer[3] != 0){
@@ -251,6 +273,12 @@ public class Log {
         return -1;
     }
 
+    /**
+     * create new page
+     * @param orgPage last page
+     * @param newId page type
+     * @return succ?
+     */
     private boolean createPage(Page orgPage, int newId) {
         try {
             if (activePageId - orgPage.page > 0xFE) {
@@ -271,40 +299,87 @@ public class Log {
         }
     }
 
+    /**
+     * create event page
+     * @return succ?
+     */
     private boolean createEventBlock() {
         return createPage(eventPage, 1);
     }
 
+    /**
+     * create detail page
+     * @return succ?
+     */
     private boolean createDetailBlock() {
         return createPage(detailPage,2);
     }
 
+    /**
+     * type of logs
+     */
     public enum LogType{
         Event, Details
     }
 
+    /**
+     * type of events
+     */
     public enum EventType {
         StartTransaction, EndTransaction, StartCheckpoint, EndCheckpoint
     }
 
-    // maybe useful ?
+    /**
+     * log detail
+     */
     public static class LogDetail {
+        /**
+         * Ops
+         */
         public enum DetailType {
             Insert, Write, Delete
         }
+
+        /**
+         * Op type
+         */
         public DetailType type;
+        /**
+         * related table name
+         */
         public String tbName;
+        /**
+         * transaction id
+         */
         public int tid;
+        /**
+         * row_id
+         */
         public int row;
+        /**
+         * column_id may be empty
+         */
         public int col; // <- possible
+        /**
+         * new value for redo, may be empty
+         */
         public Value newValue; // <- possible
     }
 
+    /**
+     * event log
+     */
     public static class LogEvent {
         EventType type;
         int tid;
     }
 
+    /**
+     * add event log
+     * @param eventType type of event
+     * @param relatedId tid/checkpoint id
+     * @return succ?
+     */
     public boolean addEventLog(EventType eventType, int relatedId) {
         int xSize = 4;
         if (eCnt + xSize > 4096) {
@@ -331,7 +406,13 @@ public class Log {
         return true;
     }
 
-    private long getDeailFlag(LogDetail.DetailType type, int tid){
+    /**
+     * pack detail flag and tid
+     * @param type event type
+     * @param tid tid
+     * @return flaged tid
+     */
+    private long getDetailFlag(LogDetail.DetailType type, int tid){
         long result = tid;
         switch (type) {
             case Insert:
@@ -346,19 +427,33 @@ public class Log {
         return result;
     }
 
+    /**
+     * add insert log
+     * @param tid transaciton id
+     * @param rowId row_id
+     * @return succ?
+     */
     public boolean addInsertLog(int tid, int rowId) {
         int xSize = 8;
         if (dCnt + xSize > 4096) {
             createPage(detailPage, 2);
             dCnt = 4;
         }
-        long flag = getDeailFlag(LogDetail.DetailType.Insert, tid);
+        long flag = getDetailFlag(LogDetail.DetailType.Insert, tid);
         writeInt(detailPage, dCnt, flag);
         writeInt(detailPage, dCnt + 4, rowId);
         dCnt = dCnt + 8;
         return false;
     }
 
+    /**
+     * add write log
+     * @param tid transaciton id
+     * @param rowId row_id
+     * @param tbName table name
+     * @param newValue new value
+     * @return succ?
+     */
     public boolean addWriteLog(int tid, int rowId, String tbName, Value newValue) {
         Type type = newValue.getType();
         byte[] strBytes = tbName.getBytes();
@@ -369,7 +464,7 @@ public class Log {
         }
         int xLength = xSize - 4 - 4 - 2;
 
-        dCnt = writeInt(detailPage, dCnt, getDeailFlag(LogDetail.DetailType.Write, tid));
+        dCnt = writeInt(detailPage, dCnt, getDetailFlag(LogDetail.DetailType.Write, tid));
         dCnt = writeInt(detailPage, dCnt, rowId);
 
         dCnt = writeWord(detailPage, dCnt, xLength);
@@ -382,24 +477,39 @@ public class Log {
         return false;
     }
 
+    /**
+     * add delete log
+     * @param tid transaction id
+     * @param rowId row_id
+     * @return
+     */
     public boolean addDeleteLog(int tid, int rowId) {
         int xSize = 8;
         if (dCnt + xSize > 4096) {
             createPage(detailPage, 2);
             dCnt = 4;
         }
-        long flag = getDeailFlag(LogDetail.DetailType.Delete, tid);
+        long flag = getDetailFlag(LogDetail.DetailType.Delete, tid);
         writeInt(detailPage, dCnt, flag);
         writeInt(detailPage, dCnt + 4, rowId);
         dCnt = dCnt + 8;
         return false;
     }
 
+    /**
+     * remove transaction
+     * @param tid transaction id
+     * @return succ?
+     */
     public boolean removeTransaction(int tid) {
         // just don't commit it
         return true;
     }
 
+    /**
+     * sync to disk
+     * @return succ?
+     */
     public boolean sync() {
         eventPage.sync();
         detailPage.sync();
@@ -409,6 +519,11 @@ public class Log {
     // transaction allocator
 
     private int tidNow = 1;
+
+    /**
+     * get next transaction id
+     * @return tid
+     */
     public int nextTid(){
         while (tidPool.contains(tidNow)) {
             tidNow = tidNow + 1;
@@ -416,17 +531,30 @@ public class Log {
         return tidNow;
     }
 
+    /**
+     * allocate a tid
+     * @return new tid
+     */
     public int allocTransaction() {
         int tid = nextTid();
         tidPool.add(tid);
         return tid;
     }
 
+    /**
+     * free tid
+     * @param tid tid
+     * @return tid
+     */
     public int freeTransaction(int tid) {
-        tidPool.remove(tid);
+        // tidPool.remove(tid); <-- cuz we spitted two log, tid should never reuse
         return tid;
     }
 
+    /**
+     * get current used transactions count
+     * @return transactions countin
+     */
     public int transactionCount(){
         return tidPool.size();
     }
@@ -472,6 +600,11 @@ public class Log {
         return p;
     }
 
+    /**
+     * get writable offset of detail
+     * @param page page object
+     * @return offset
+     */
     private int sizeDetail(Page page){
         int p = 4;
         int cnt = (int)readWord(page, 1);

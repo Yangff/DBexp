@@ -15,11 +15,21 @@ public class Journal {
 
     HashMap<Integer, TransactionInst> trans;
 
+    /**
+     * Journal instance
+     * @param root transaction instance
+     * @param logFile log file
+     * @param createJournal should I create basic structure?
+     */
     public Journal(transaction root, RandomAccessFile logFile, boolean createJournal){
         this.root = root;
         this.logs = new Log(logFile, createJournal);
     }
 
+    /**
+     * start a transaction
+     * @return transaction object for read/write/... logs
+     */
     public TransactionInst startTransaction(){
         int tid = logs.allocTransaction();
         TransactionInst inst = new TransactionInst(tid, this);
@@ -27,6 +37,10 @@ public class Journal {
         return inst;
     }
 
+    /**
+     * do checkpoint, put all memory data to storage
+     * @return succ?
+     */
     public boolean checkPoint(){
         logs.addEventLog(Log.EventType.StartCheckpoint, 1);
         logs.sync(); // <- make sure log written
