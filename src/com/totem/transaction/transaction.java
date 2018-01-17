@@ -61,7 +61,7 @@ public class transaction {
         if (!openFS("new"))
             return false;
 
-        LogRestorer restorer = new LogRestorer(oldJournalFile, newJournalFile);
+        LogRestorer restorer = new LogRestorer(db.Storage, oldJournalFile, newJournalFile);
         if (restorer.start()) {
             if (restorer.done()) {
                 db.Storage.migrateLog();

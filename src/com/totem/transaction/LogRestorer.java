@@ -1,5 +1,9 @@
 package com.totem.transaction;
 
+import com.totem.storage.PhyTable;
+import com.totem.storage.storage;
+
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.TreeSet;
@@ -11,9 +15,11 @@ import java.util.TreeSet;
 public class LogRestorer {
     private RandomAccessFile oldLog, newLog;
     private Log oldLogO, newLogO;
-    public LogRestorer(RandomAccessFile oldLog, RandomAccessFile newLog) {
+    private storage store;
+    public LogRestorer(storage store, RandomAccessFile oldLog, RandomAccessFile newLog) {
         this.oldLog = oldLog;
         this.newLog = newLog;
+        this.store = store;
         this.oldLogO = new Log(oldLog, false);
         this.newLogO = new Log(newLog, true);
     }
@@ -78,6 +84,26 @@ public class LogRestorer {
         write file
         close file
          */
+        try {
+            newLogO.sync(); // <-- sync log file
+            // redo
+            newLogO.eachDetails((Log.LogDetail ld) -> {
+                PhyTable tb = (PhyTable)store.openTable(ld.tbName);
+                if (ld.type == Log.LogDetail.DetailType.Write) {
+                    tb.writeById(ld.row, ld.col, ld.newValue);
+                }
+                if (ld.type == Log.LogDetail.DetailType.Insert){
+                    tb.insertById(ld.row);
+                }
+                if (ld.type == Log.LogDetail.DetailType.Delete) {
+                    tb.remove(ld.row);
+                }
+            });
+            oldLog.close();
+            newLog.close();
+        } catch (IOException ioe){
+            return false;
+        }
         return true;
     }
 }
