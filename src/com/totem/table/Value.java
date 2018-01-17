@@ -1,5 +1,6 @@
 package com.totem.table;
 
+import java.nio.ByteBuffer;
 import java.util.Date;
 
 public class Value {
@@ -138,12 +139,10 @@ public class Value {
         byte[] result;
         int len = type.getSize();
         result = new byte[len];
+        ByteBuffer buff = ByteBuffer.wrap(result);
         switch (type.getMetaType()) {
             case Int:
-                result[0] = (byte)(((long)getIntegerValue()) & 0xff);
-                result[1] = (byte)(((long)getIntegerValue()>>8) & 0xff);
-                result[2] = (byte)(((long)getIntegerValue()>>16) & 0xff);
-                result[3] = (byte)(((long)getIntegerValue()>>24) & 0xff);
+                buff.putInt(getIntegerValue());
                 return result;
             case Chars:
                 char[] bts = getCharsValue();
@@ -154,8 +153,10 @@ public class Value {
                 }
                 return result;
             case Double:
+                buff.putDouble(getDoubleValue());
                 return result;
             case DateTime:
+                buff.putLong(getDateValue().getTime());
                 return result;
         }
         return null;
