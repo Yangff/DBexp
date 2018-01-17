@@ -1,14 +1,10 @@
 package com.totem.transaction;
 
 import com.totem.storage.Page;
-import com.totem.table.Cell;
 import com.totem.table.Type;
 import com.totem.table.Value;
-import javafx.util.Pair;
-import jdk.jfr.Event;
 
 import java.io.RandomAccessFile;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Consumer;
