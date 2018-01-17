@@ -2,13 +2,16 @@ package com.totem.transaction;
 
 import com.totem.storage.Page;
 import com.totem.table.Cell;
+import com.totem.table.Type;
 import com.totem.table.Value;
 import javafx.util.Pair;
+import jdk.jfr.Event;
 
 import java.io.RandomAccessFile;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 /**
  * Read and Write logs to file
@@ -37,6 +40,8 @@ public class Log {
             detailPage.buffer[2] = 0;
             eventPage.buffer[3] = (byte)0xFF;
             detailPage.buffer[3] = (byte)0xFF;
+            detailPage.markDirty();
+            eventPage.markDirty();
             activePageId = 2;
             eCnt = 4;
             dCnt = 4;
@@ -48,7 +53,152 @@ public class Log {
             detailPage.replace(dPage);
             dCnt = sizeDetail(detailPage);
             activePageId = 1 + Math.max(ePage, dPage);
+            recoveryTids();
         }
+    }
+
+    public void eachTids(Consumer<LogEvent> call){
+        long orgPage = eventPage.page;
+        eventPage.replace(0);
+        while (true){
+            long len = readWord(eventPage, 1);
+            int pos = 4;
+            for (int i = 0; i < len; i++){
+                long tid = readInt(eventPage, pos + 4 * i);
+                int flags = (int)(tid >> 30);
+                tid = tid & 0b00111111111111111111111111111111;
+                LogEvent ev = new LogEvent();
+                ev.tid = (int)tid;
+                if (tid != 0) {
+                    switch (flags) {
+                        case 0:
+                            ev.type = EventType.StartTransaction;
+                            break;
+                        case 1:
+                            ev.type = EventType.EndTransaction;
+                            break;
+                        case 2:
+                            ev.type = EventType.StartCheckpoint;
+                            break;
+                        case 3:
+                            ev.type = EventType.EndCheckpoint;
+                    }
+                    call.accept(ev);
+                }
+            }
+            if (eventPage.buffer[3] == 0)
+                break;
+            int pg = getNextPage(eventPage, 1);
+            if (pg != -1)
+                eventPage.replace(pg);
+            else break;
+        }
+        eventPage.replace(orgPage);
+    }
+
+    public void eachDetails(Consumer<LogDetail> call){
+        long orgPage = detailPage.page;
+        detailPage.replace(1);
+        while (true){
+            long len = readWord(detailPage, 1);
+            int pos = 4;
+            for (int i = 0; i < len; i++){
+                long tid = readInt(detailPage, pos);
+                pos = pos + 4;
+                int flags = (int)(tid >> 30);
+                tid = tid & 0b00111111111111111111111111111111;
+                LogDetail ld = new LogDetail();
+                ld.tid = (int)tid;
+                if (tid != 0) {
+                    switch (flags) {
+                        case 0:
+                            return ; // <-- bad flag
+                        case 1:
+                            ld.type = LogDetail.DetailType.Insert;
+                            break;
+                        case 2:
+                            ld.type = LogDetail.DetailType.Write;
+                            break;
+                        case 3:
+                            ld.type = LogDetail.DetailType.Delete;
+                    }
+                    long row_id = readInt(detailPage, pos);
+                    ld.row = (int)row_id;
+                    pos = pos + 4;
+                    if (ld.type == LogDetail.DetailType.Insert || ld.type == LogDetail.DetailType.Delete){
+                        call.accept(ld);
+                    } else {
+                        pos = pos + 2; // skip len
+                        int sLen = (int)readWord(detailPage, pos);
+                        String tbName = readString(detailPage, pos);
+                        pos = pos + 2 + sLen;
+                        ld.tbName = tbName;
+                        int col = (int)readInt(detailPage, pos);
+                        pos = pos + 4;
+                        ld.col = col;
+                        int type = detailPage.buffer[pos];
+                        pos = pos + 1;
+                        Type xType = new Type();
+                        Value v = new Value();
+                        v.setType(xType);
+                        // Null, Int, Chars, Double, DateTime, PInfinity, NInfinity
+                        byte[] data = null;
+                        switch (type) {
+                            case 1:
+                                xType.setMetaType(Type.MetaType.Int);
+                                data = new byte[4];
+                                System.arraycopy(detailPage.buffer, pos, data, 0, 4);
+                                pos = pos + 4;
+                                break;
+                            case 2:
+                                xType.setMetaType(Type.MetaType.Chars);
+                                int charsLen = (int)readWord(detailPage, pos);
+                                xType.setStrLen(charsLen);
+                                pos = pos + 2;
+                                data = new byte[charsLen];
+                                System.arraycopy(detailPage.buffer, pos, data, 0, charsLen);
+                                pos = pos + charsLen;
+                                break;
+                            case 3:
+                                xType.setMetaType(Type.MetaType.Double);
+                                data = new byte[8];
+                                System.arraycopy(detailPage.buffer, pos, data, 0, 8);
+                                pos = pos + 8;
+                                break;
+                            case 4:
+                                data = new byte[8];
+                                System.arraycopy(detailPage.buffer, pos, data, 0, 8);
+                                pos = pos + 8;
+                                xType.setMetaType(Type.MetaType.DateTime);
+                                break;
+                        }
+                        if (data == null)
+                            return; // <-- broken data
+                        v.fromSerial(data);
+                        ld.newValue = v;
+                        call.accept(ld);
+                    }
+
+                }
+            }
+            if (detailPage.buffer[3] == 0) {
+                break;
+            }
+            int pg = getNextPage(detailPage, 1);
+            if (pg != -1)
+                detailPage.replace(pg);
+            else
+                break;
+        }
+        detailPage.replace(orgPage);
+    }
+
+    private void recoveryTids() {
+        eachTids((LogEvent le) -> {
+            if (le.type == EventType.StartTransaction) {
+                tidPool.add(le.tid);
+            }
+        });
     }
 
     /**
@@ -97,6 +247,14 @@ public class Log {
         return nextPageId;
     }
 
+    private int getNextPage(Page orgPage, int id){
+        Page newPage = new Page(logFile, orgPage.page);
+        if (orgPage.buffer[3] != 0){
+            return nextBlock(orgPage, newPage, id);
+        }
+        return -1;
+    }
+
     private boolean createPage(Page orgPage, int newId) {
         try {
             if (activePageId - orgPage.page > 0xFE) {
@@ -110,6 +268,7 @@ public class Log {
             orgPage.buffer[1] = 0;
             orgPage.buffer[2] = 0;
             orgPage.buffer[3] = 0; // <-- no more page
+            orgPage.markDirty();
             return true;
         } catch (Exception e) {
             return false;
@@ -138,11 +297,17 @@ public class Log {
             Insert, Write, Delete
         }
         public DetailType type;
+        public String tbName;
+        public int tid;
         public int row;
         public int col; // <- possible
         public Value newValue; // <- possible
     }
 
+    public static class LogEvent {
+        EventType type;
+        int tid;
+    }
 
     public boolean addEventLog(EventType eventType, int relatedId) {
         int xSize = 4;
@@ -198,23 +363,26 @@ public class Log {
         return false;
     }
 
-    public boolean addWriteLog(int tid, int rowId, Cell newValue) {
-        String tbName = newValue.getAttribute().getTableName();
+    public boolean addWriteLog(int tid, int rowId, String tbName, Value newValue) {
+        Type type = newValue.getType();
         byte[] strBytes = tbName.getBytes();
-        int xSize = 4 + 2 + (strBytes.length + 2) + 4 + 1 + newValue.getValue().getType().getSize();
+        int xSize = 4 + 4 + 2 + (strBytes.length + 2) + 4 + 1 + type.getSize();
         if (dCnt + xSize > 4096) {
             createPage(detailPage, 2);
             dCnt = 4;
         }
-        int xLength = xSize - 4 - 2;
+        int xLength = xSize - 4 - 4 - 2;
 
         dCnt = writeInt(detailPage, dCnt, getDeailFlag(LogDetail.DetailType.Write, tid));
+        dCnt = writeInt(detailPage, dCnt, rowId);
+
         dCnt = writeWord(detailPage, dCnt, xLength);
         dCnt = writeBytes(detailPage, dCnt, strBytes);
 
-        detailPage.buffer[dCnt] = (byte)newValue.getValue().getType().getMetaType().ordinal();
+        detailPage.buffer[dCnt] = (byte)type.getMetaType().ordinal();
         dCnt = dCnt + 1;
-        dCnt = writeBytes(detailPage, dCnt, newValue.getValue().getSerial());
+        dCnt = writeBytes(detailPage, dCnt, newValue.getSerial());
+        detailPage.markDirty();
         return false;
     }
 
@@ -275,15 +443,26 @@ public class Log {
         return readWord(page, p) + readWord(page, p + 2) * 256L*256L;
     }
 
+    private String readString(Page page, int p){
+        int len = (int)readWord(page, p);
+        p = p + 2;
+        byte buf[] = new byte[len];
+        for (int i = 0; i < len; i++)
+            buf[i] = page.buffer[p + i];
+        return new String(buf);
+    }
+
     private int writeWord(Page page, int p, long v){
         page.buffer[p] = (byte)(v & 0xff);
         page.buffer[p + 1] = (byte)((v >> 8)&0xff);
+        page.markDirty();
         return p + 2;
     }
 
     private int writeInt(Page page, int p, long v){
         writeWord(page, p, v & 0xffff);
         writeWord(page, p + 2, (v>>16) & 0xffff);
+        page.markDirty();
         return p + 4;
     }
 
@@ -293,6 +472,7 @@ public class Log {
             page.buffer[p] = aByte;
             p = p + 1;
         }
+        page.markDirty();
         return p;
     }
 

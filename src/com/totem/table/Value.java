@@ -161,4 +161,26 @@ public class Value {
         }
         return null;
     }
+
+    public void fromSerial(byte[] bytes){
+        ByteBuffer buff = ByteBuffer.wrap(bytes);
+        switch (type.getMetaType()) {
+            case Int:
+                setIntegerValue(buff.getInt());
+                return ;
+            case Chars:
+                char[] chars = new char[bytes.length];
+                for (int i = 0; i < bytes.length; i++){
+                    chars[i] = (char)bytes[i];
+                }
+                setCharsValue(chars);
+                return ;
+            case Double:
+                setDoubleValue(buff.getDouble());
+                return ;
+            case DateTime:
+                setDateValue(new Date(buff.getLong()));
+                return ;
+        }
+    }
 }

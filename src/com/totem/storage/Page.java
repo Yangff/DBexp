@@ -40,6 +40,10 @@ public class Page {
         return true;
     }
 
+    public void markDirty(){
+        dirty = true;
+    }
+
     // not thread safe warning
     private boolean gotoPage(long _page){
         try {

@@ -82,8 +82,9 @@ public class LogTable implements ITable {
         int rowId = orgTable.getInsertRowId();
         logs.addInsertLog(tid, rowId);
         dirtyMap.insertRow(rowId);
+        String tbName = getTableInfo().tableName;
         for (int i = 0; i < cells.length; i++) {
-            logs.addWriteLog(tid, rowId, cells[i]);
+            logs.addWriteLog(tid, rowId, tbName, cells[i].getValue());
         }
         return 0;
     }
