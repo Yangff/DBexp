@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-// FIXME: bypass log when transaction is not commit
+
+/**
+ * iterator for log table int[]
+ */
 public class LogTableIteratorInt implements Iterator<Integer> {
     private Iterator<Integer> orgIterator;
     private Integer itCurrent;

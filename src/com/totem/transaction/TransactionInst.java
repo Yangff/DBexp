@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 
+/**
+ * transaction instance
+ */
 public class TransactionInst {
     private int tid;
     private Journal journal;

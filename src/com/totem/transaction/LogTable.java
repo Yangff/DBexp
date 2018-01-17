@@ -7,6 +7,9 @@ import com.totem.table.TableScheme;
 
 import java.util.Iterator;
 
+/**
+ * Log table
+ */
 public class LogTable implements ITable {
     private PhyTable orgTable;
     private DirtyMap dirtyMap;

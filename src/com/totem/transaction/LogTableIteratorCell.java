@@ -6,6 +6,9 @@ import javafx.util.Pair;
 
 import java.util.*;
 
+/**
+ * iterator for log table cell[]
+ */
 public class LogTableIteratorCell implements Iterator<Cell[]> {
     private Iterator<Cell[]> orgIterator;
     private Cell[] itCurrent;

@@ -8,6 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.util.HashMap;
 
+/**
+ * transaction interface
+ */
 public class transaction {
     private database db;
     private RandomAccessFile oldJournalFile;
@@ -65,7 +68,7 @@ public class transaction {
         if (!openFS("new"))
             return false;
 
-        LogRestorer restorer = new LogRestorer(db.Storage, oldJournalFile, newJournalFile);
+        LogRestorer restorer = new LogRestorer(this, oldJournalFile, newJournalFile);
         if (restorer.start()) {
             if (restorer.done()) {
                 db.Storage.migrateLog();
