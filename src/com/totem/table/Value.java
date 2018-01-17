@@ -146,8 +146,8 @@ public class Value {
                 return result;
             case Chars:
                 char[] bts = getCharsValue();
-                result[0] = (byte)(bts.length & 0xff);
-                result[1] = (byte)((bts.length>>8) & 0xff);
+                result[0] = (byte)(type.getStrLen() & 0xff);
+                result[1] = (byte)((type.getStrLen()>>8) & 0xff);
                 for (int i = 0; i < bts.length; i++){
                     result[i + 2] = (byte)bts[i];
                 }
